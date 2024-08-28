@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import { Search, X, Edit, Trash } from 'lucide-react';
@@ -12,6 +13,8 @@ const MembersPage = ({ email }) => {
     { id: 2, firstName: 'John', lastName: 'Doe', group: 'Group B', phone: '0987654321', email: 'john@example.com' },
     // Add more members as needed
   ]);
+
+  const location = useLocation();
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
@@ -41,17 +44,14 @@ const MembersPage = ({ email }) => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden relative">
-      <div className={`fixed inset-0 bg-black bg-opacity-50 z-40 ${sidebarOpen ? 'block' : 'hidden'}`} onClick={toggleSidebar}></div>
-      <div className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} activePath="/members" />
-      </div>
+    <div className="relative flex h-screen bg-gray-100 overflow-hidden">
+      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} activePath={location.pathname} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar email={email} toggleSidebar={toggleSidebar} />
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold mb-4 text-black">Members</h2>
-            <div className="sticky top-0 bg-gray-100 py-4 z-20">
+            <div className="sticky top-0 bg-gray-100 py-4 z-10">
               <div className="relative">
                 <input
                   type="text"
@@ -93,7 +93,7 @@ const MembersPage = ({ email }) => {
       </div>
 
       {editingMember && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-60">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-black">Edit Member</h3>

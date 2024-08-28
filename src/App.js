@@ -10,6 +10,7 @@ import ManageLoans from './components/ManageLoans';
 import ManageVisits from './components/ManageVisits';
 import MembersPage from './components/MembersPage';
 import './App.css';
+import GroupPage from './components/GroupPage';
 
 function App() {
   // This should be dynamically set based on the logged-in user
@@ -28,6 +29,7 @@ function App() {
         <Route path="/manage-loans" element={<ManageLoans email={userEmail} />} />
         <Route path="/manage-visits" element={<ManageVisits email={userEmail} />} />
         <Route path="/members" element={<MembersPage email={userEmail} />} />
+        <Route path="/groups" element={<GroupPage email={userEmail} />} />
       </Routes>
     </Router>
   );
