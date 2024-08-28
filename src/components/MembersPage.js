@@ -45,8 +45,10 @@ const MembersPage = ({ email }) => {
 
   return (
     <div className="relative flex h-screen bg-gray-100 overflow-hidden">
-      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} activePath={location.pathname} />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} activePath={location.pathname} className={`fixed inset-y-0 left-0 w-64 z-50 ${sidebarOpen ? 'block' : 'hidden'}`} />
+      
+      {/* Main content area */}
+      <div className={`flex-1 flex flex-col overflow-hidden transition-transform duration-300 ${sidebarOpen ? 'transform translate-x-64' : ''}`}>
         <Navbar email={email} toggleSidebar={toggleSidebar} />
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -166,3 +168,4 @@ const MembersPage = ({ email }) => {
 };
 
 export default MembersPage;
+

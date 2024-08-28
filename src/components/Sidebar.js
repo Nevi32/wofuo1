@@ -9,9 +9,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     { icon: Home, text: 'Dashboard', path: '/dashboard' },
     { icon: Users, text: 'Members', path: '/members' },
     { icon: Group, text: 'Groups', path: '/groups' },
-    { icon: Coins, text: 'Savings', path: '/manage-savings' },
-    { icon: FileText, text: 'Loans', path: '/manage-loans' },
-    { icon: BarChart2, text: 'Visits', path: '/manage-visits' },
+    { icon: Coins, text: 'Savings', path: '/savings' },
+    { icon: FileText, text: 'Loans', path: '/loans' },
+    { icon: BarChart2, text: 'Visits', path: '/visits' },
     { icon: Settings, text: 'Settings', path: '/settings' },
   ];
 
