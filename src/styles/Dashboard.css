@@ -1,0 +1,22 @@
+/* dashboard.css */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Custom styles */
+.dashboard-card {
+  @apply bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300;
+}
+
+.dashboard-card-title {
+  @apply text-lg font-semibold text-purple-700 mb-2;
+}
+
+.dashboard-card-description {
+  @apply text-gray-600;
+}
+
+/* Add any additional custom styles here */
+  
+  
+  
