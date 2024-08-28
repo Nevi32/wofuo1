@@ -12,12 +12,10 @@ const Dashboard = ({ email }) => {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   const actionItems = [
-    { title: 'Create New Group', description: 'Set up new financial groups effortlessly.', path: '/create-group' },
     { title: 'Register New Member', description: 'Quickly add new members to the system.', path: '/register-member' },
     { title: 'Manage Savings', description: 'Track and manage member savings.', path: '/manage-savings' },
     { title: 'Manage Loans', description: 'Handle loan applications and repayments.', path: '/manage-loans' },
     { title: 'Manage Visits', description: 'Track and manage visits to groups.', path: '/manage-visits' },
-    { title: 'Manage member details', description: 'Track and manage members info.', path: '/manage-members' },
   ];
 
   const handleCardClick = (path) => {
@@ -36,8 +34,8 @@ const Dashboard = ({ email }) => {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {actionItems.map((item, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer"
                   onClick={() => handleCardClick(item.path)}
                 >
@@ -54,3 +52,4 @@ const Dashboard = ({ email }) => {
 };
 
 export default Dashboard;
+

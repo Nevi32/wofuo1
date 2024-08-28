@@ -4,16 +4,17 @@ import LandingPage from './components/LandingPage';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import Dashboard from './components/Dashboard';
-import CreateGroup from './components/CreateGroup';
 import RegisterMember from './components/RegisterMember';
 import ManageSavings from './components/ManageSavings';
 import ManageLoans from './components/ManageLoans';
 import ManageVisits from './components/ManageVisits';
-import ManageMembers from './components/ManageMembers';
+import MembersPage from './components/MembersPage';
 import './App.css';
 
 function App() {
-  const userEmail = "johnnemo@gmail.com"; // This should be dynamically set based on the logged-in user
+  // This should be dynamically set based on the logged-in user
+  // For now, we'll use a dummy email. In a real app, this would come from your authentication system
+  const userEmail = "johndoe@example.com";
 
   return (
     <Router>
@@ -22,13 +23,11 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard" element={<Dashboard email={userEmail} />} />
-        <Route path="/create-group" element={<CreateGroup />} />
-        <Route path="/register-member" element={<RegisterMember />} />
-        <Route path="/manage-savings" element={<ManageSavings />} />
-        <Route path="/manage-loans" element={<ManageLoans />} />
-        <Route path="/manage-visits" element={<ManageVisits />} />
-        <Route path="/manage-members" element={<ManageMembers />} />
-        {/* Add routes for other sidebar items if needed */}
+        <Route path="/register-member" element={<RegisterMember email={userEmail} />} />
+        <Route path="/manage-savings" element={<ManageSavings email={userEmail} />} />
+        <Route path="/manage-loans" element={<ManageLoans email={userEmail} />} />
+        <Route path="/manage-visits" element={<ManageVisits email={userEmail} />} />
+        <Route path="/members" element={<MembersPage email={userEmail} />} />
       </Routes>
     </Router>
   );

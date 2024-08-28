@@ -9,9 +9,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     { icon: Home, text: 'Dashboard', path: '/dashboard' },
     { icon: Users, text: 'Members', path: '/members' },
     { icon: Group, text: 'Groups', path: '/groups' },
-    { icon: Coins, text: 'Savings', path: '/savings' },
-    { icon: FileText, text: 'Loans', path: '/loans' },
-    { icon: BarChart2, text: 'Analytics', path: '/analytics' },
+    { icon: Coins, text: 'Savings', path: '/manage-savings' },
+    { icon: FileText, text: 'Loans', path: '/manage-loans' },
+    { icon: BarChart2, text: 'Visits', path: '/manage-visits' },
     { icon: Settings, text: 'Settings', path: '/settings' },
   ];
 
@@ -31,7 +31,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         <div className="flex items-center justify-between h-16 px-4">
           <div className="flex items-center">
             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-              <img src="/path-to-your-logo.png" alt="WOFUO Logo" className="w-8 h-8" />
+              <img src="/logo.jpeg" alt="WOFUO Logo" className="w-8 h-8" />
             </div>
             <span className="ml-2 text-xl font-bold">WOFUO</span>
           </div>
@@ -43,7 +43,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           <ul>
             {menuItems.map((item, index) => (
               <li key={index} className="px-2">
-                <Link 
+                <Link
                   to={item.path}
                   className={`flex items-center w-full px-2 py-3 text-sm font-medium rounded-md hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-white ${
                     location.pathname === item.path ? 'bg-purple-800' : ''
