@@ -66,3 +66,13 @@ export const recordVisit = async (visitData, tableData) => {
 
   await saveDB(db);
 };
+
+// Function to fetch all recorded visits
+export const fetchAllVisits = async () => {
+  await initDB(); // Initialize the database if it doesn't exist
+
+  const db = await getDB();
+
+  // Return the visits array or an empty array if there are no visits
+  return db.visits || [];
+};

@@ -4,21 +4,24 @@ import { initDB, getDB, saveDB } from './localStorageDB';
 export const recordGroupLoan = async (groupName, loanAmount, period, companyPayout, interestAmount, dateIssued, dateToRepay) => {
   await initDB();
   const db = await getDB();
-
+  
   if (!db.groupLoans) {
     db.groupLoans = [];
   }
-
+  
   db.groupLoans.push({
-    groupName,
-    loanAmount,
-    period,
+    id: Date.now(),
+    type: 'group',
+    name: groupName,
+    amount: loanAmount,
+    term: period,
+    interest: interestAmount,
+    status: 'Approved',
     companyPayout,
-    interestAmount,
     dateIssued,
     dateToRepay
   });
-
+  
   await saveDB(db);
   return { groupName, loanAmount, dateIssued };
 };
@@ -27,23 +30,25 @@ export const recordGroupLoan = async (groupName, loanAmount, period, companyPayo
 export const recordLongTermLoan = async (groupName, memberName, guarantors, loanAmount, period, interestAmount, loanFormFee, dateIssued, dateToRepay) => {
   await initDB();
   const db = await getDB();
-
+  
   if (!db.longTermLoans) {
     db.longTermLoans = [];
   }
-
+  
   db.longTermLoans.push({
-    groupName,
-    memberName,
+    id: Date.now(),
+    type: 'long-term',
+    name: `${groupName} - ${memberName}`,
+    amount: loanAmount,
+    term: period,
+    interest: interestAmount,
+    status: 'Approved',
     guarantors,
-    loanAmount,
-    period,
-    interestAmount,
     loanFormFee,
     dateIssued,
     dateToRepay
   });
-
+  
   await saveDB(db);
   return { groupName, memberName, loanAmount, dateIssued };
 };
@@ -52,23 +57,37 @@ export const recordLongTermLoan = async (groupName, memberName, guarantors, loan
 export const recordShortTermLoan = async (groupName, memberName, guarantors, loanAmount, period, interestAmount, loanFormFee, dateIssued, dateToRepay) => {
   await initDB();
   const db = await getDB();
-
+  
   if (!db.shortTermLoans) {
     db.shortTermLoans = [];
   }
-
+  
   db.shortTermLoans.push({
-    groupName,
-    memberName,
+    id: Date.now(),
+    type: 'short-term',
+    name: `${groupName} - ${memberName}`,
+    amount: loanAmount,
+    term: period,
+    interest: interestAmount,
+    status: 'Approved',
     guarantors,
-    loanAmount,
-    period,
-    interestAmount,
     loanFormFee,
     dateIssued,
     dateToRepay
   });
-
+  
   await saveDB(db);
   return { groupName, memberName, loanAmount, dateIssued };
+};
+
+// Function to fetch all loans
+export const fetchAllLoans = async () => {
+  await initDB();
+  const db = await getDB();
+  
+  const groupLoans = db.groupLoans || [];
+  const longTermLoans = db.longTermLoans || [];
+  const shortTermLoans = db.shortTermLoans || [];
+  
+  return [...groupLoans, ...longTermLoans, ...shortTermLoans];
 };

@@ -13,6 +13,7 @@ import GroupPage from './components/GroupPage';
 import SavingsPage from './components/SavingsPage';
 import LoanPage from './components/LoanPages';
 import VisitsPage from './components/VisitsPage';
+import SettingsPage from './components/SettingsPage';
 import './App.css';
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
         <Route path="/savings" element={<SavingsPage />} />
         <Route path="/loans" element={<LoanPage />} />
         <Route path="/visits" element={<VisitsPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Routes>
     </Router>
   );
