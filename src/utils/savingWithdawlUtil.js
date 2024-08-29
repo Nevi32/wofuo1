@@ -6,12 +6,9 @@ export const recordWithdrawal = async (groupName, memberName, withdrawAmount, co
 
   const db = await getDB();
 
-  // Find the group and member to validate (this example assumes groups and members are tracked separately)
-  const group = db.groups.find(g => g.name === groupName);
-  const member = group ? group.members.find(m => m.name === memberName) : null;
-
-  if (!group || !member) {
-    throw new Error('Group or member not found.');
+  // Ensure the withdrawals array exists
+  if (!db.withdrawals) {
+    db.withdrawals = [];
   }
 
   // Record the withdrawal
@@ -34,12 +31,9 @@ export const recordSaving = async (groupName, memberName, savingAmount, savingDa
 
   const db = await getDB();
 
-  // Find the group and member to validate (this example assumes groups and members are tracked separately)
-  const group = db.groups.find(g => g.name === groupName);
-  const member = group ? group.members.find(m => m.name === memberName) : null;
-
-  if (!group || !member) {
-    throw new Error('Group or member not found.');
+  // Ensure the savings array exists
+  if (!db.savings) {
+    db.savings = [];
   }
 
   // Record the saving

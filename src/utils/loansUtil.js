@@ -1,0 +1,74 @@
+import { initDB, getDB, saveDB } from './localStorageDB';
+
+// Function to record a group loan
+export const recordGroupLoan = async (groupName, loanAmount, period, companyPayout, interestAmount, dateIssued, dateToRepay) => {
+  await initDB();
+  const db = await getDB();
+
+  if (!db.groupLoans) {
+    db.groupLoans = [];
+  }
+
+  db.groupLoans.push({
+    groupName,
+    loanAmount,
+    period,
+    companyPayout,
+    interestAmount,
+    dateIssued,
+    dateToRepay
+  });
+
+  await saveDB(db);
+  return { groupName, loanAmount, dateIssued };
+};
+
+// Function to record a long-term loan
+export const recordLongTermLoan = async (groupName, memberName, guarantors, loanAmount, period, interestAmount, loanFormFee, dateIssued, dateToRepay) => {
+  await initDB();
+  const db = await getDB();
+
+  if (!db.longTermLoans) {
+    db.longTermLoans = [];
+  }
+
+  db.longTermLoans.push({
+    groupName,
+    memberName,
+    guarantors,
+    loanAmount,
+    period,
+    interestAmount,
+    loanFormFee,
+    dateIssued,
+    dateToRepay
+  });
+
+  await saveDB(db);
+  return { groupName, memberName, loanAmount, dateIssued };
+};
+
+// Function to record a short-term loan
+export const recordShortTermLoan = async (groupName, memberName, guarantors, loanAmount, period, interestAmount, loanFormFee, dateIssued, dateToRepay) => {
+  await initDB();
+  const db = await getDB();
+
+  if (!db.shortTermLoans) {
+    db.shortTermLoans = [];
+  }
+
+  db.shortTermLoans.push({
+    groupName,
+    memberName,
+    guarantors,
+    loanAmount,
+    period,
+    interestAmount,
+    loanFormFee,
+    dateIssued,
+    dateToRepay
+  });
+
+  await saveDB(db);
+  return { groupName, memberName, loanAmount, dateIssued };
+};

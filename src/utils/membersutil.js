@@ -50,18 +50,3 @@ export const updateGroupName = async (groupId, newName) => {
   }
 };
 
-// Fetch all groups
-export const getGroups = async () => {
-    await initDB(); // Ensure the database is initialized
-    const db = await getDB(); // Retrieve the database
-    return db.groups || []; // Return the groups array, defaulting to an empty array if not found
-  };
-  
-  // Fetch members by group name
-  export const getMembersByGroup = async (groupName) => {
-    await initDB(); // Ensure the database is initialized
-    const db = await getDB(); // Retrieve the database
-    const group = db.groups.find(g => g.name === groupName);
-    return group ? group.members : []; // Return members of the group or empty array if the group is not found
-  };
-

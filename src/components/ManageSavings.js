@@ -3,42 +3,16 @@ import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import Notification from './Notification';
 import { recordWithdrawal, recordSaving } from '../utils/savingWithdawlUtil';
-import { getGroups, getMembersByGroup } from '../utils/membersutil';
 
 const ManageSavings = ({ email }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeForm, setActiveForm] = useState('withdrawal');
   const [notification, setNotification] = useState(null);
-  const [groups, setGroups] = useState([]);
-  const [members, setMembers] = useState([]);
-  const [selectedGroup, setSelectedGroup] = useState('');
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   const handleFormToggle = (form) => {
     setActiveForm(form);
-  };
-
-  // Fetch groups when the component mounts
-  const fetchGroups = async () => {
-    try {
-      const groupsData = await getGroups();
-      setGroups(groupsData);
-    } catch (error) {
-      setNotification({ message: 'Error fetching groups.', type: 'error' });
-    }
-  };
-
-  // Fetch members when the selected group changes
-  const handleGroupChange = async (event) => {
-    const groupName = event.target.value;
-    setSelectedGroup(groupName);
-    try {
-      const membersData = await getMembersByGroup(groupName);
-      setMembers(membersData);
-    } catch (error) {
-      setNotification({ message: 'Error fetching members.', type: 'error' });
-    }
   };
 
   // Handle form submission
@@ -74,10 +48,6 @@ const ManageSavings = ({ email }) => {
   };
 
   useEffect(() => {
-    fetchGroups();
-  }, []);
-
-  useEffect(() => {
     if (notification) {
       const timer = setTimeout(() => setNotification(null), 5000); // Hide notification after 5 seconds
       return () => clearTimeout(timer);
@@ -108,89 +78,51 @@ const ManageSavings = ({ email }) => {
             </div>
             {notification && <Notification message={notification.message} type={notification.type} />}
 
-            {activeForm === 'withdrawal' ? (
-              <form id="withdraw-savings-form" onSubmit={handleFormSubmit}>
-                <label htmlFor="withdraw-group-name" className="block text-black font-medium mb-2">Group Name</label>
-                <select
-                  id="withdraw-group-name"
-                  name="group_name"
-                  className="mb-4 p-2 border rounded w-full"
-                  value={selectedGroup}
-                  onChange={handleGroupChange}
-                  required
-                >
-                  <option value="">Select a Group</option>
-                  {groups.map(group => (
-                    <option key={group.name} value={group.name}>{group.name}</option>
-                  ))}
-                </select>
+            <form id={activeForm === 'withdrawal' ? "withdraw-savings-form" : "register-savings-form"} onSubmit={handleFormSubmit}>
+              <label htmlFor="group-name" className="block text-black font-medium mb-2">Group Name</label>
+              <input
+                type="text"
+                id="group-name"
+                name="group_name"
+                className="mb-4 p-2 border rounded w-full"
+                required
+              />
 
-                <label htmlFor="withdraw-member-name" className="block text-black font-medium mb-2">Member Name</label>
-                <select
-                  id="withdraw-member-name"
-                  name="member_name"
-                  className="mb-4 p-2 border rounded w-full"
-                  required
-                >
-                  <option value="">Select a Member</option>
-                  {members.map(member => (
-                    <option key={member.name} value={member.name}>{member.name}</option>
-                  ))}
-                </select>
+              <label htmlFor="member-name" className="block text-black font-medium mb-2">Member Name</label>
+              <input
+                type="text"
+                id="member-name"
+                name="member_name"
+                className="mb-4 p-2 border rounded w-full"
+                required
+              />
 
-                <label htmlFor="withdraw-amount" className="block text-black font-medium mb-2">Withdrawal Amount</label>
-                <input type="number" id="withdraw-amount" name="withdraw_amount" className="mb-4 p-2 border rounded w-full" required />
+              {activeForm === 'withdrawal' ? (
+                <>
+                  <label htmlFor="withdraw-amount" className="block text-black font-medium mb-2">Withdrawal Amount</label>
+                  <input type="number" id="withdraw-amount" name="withdraw_amount" className="mb-4 p-2 border rounded w-full" required />
 
-                <label htmlFor="company-payout" className="block text-black font-medium mb-2">Company Payout</label>
-                <input type="number" id="company-payout" name="company_payout" className="mb-4 p-2 border rounded w-full" readOnly />
+                  <label htmlFor="company-payout" className="block text-black font-medium mb-2">Company Payout</label>
+                  <input type="number" id="company-payout" name="company_payout" className="mb-4 p-2 border rounded w-full" />
 
-                <label htmlFor="amount-given" className="block text-black font-medium mb-2">Amount Given</label>
-                <input type="number" id="amount-given" name="amount_given" className="mb-4 p-2 border rounded w-full" readOnly />
+                  <label htmlFor="amount-given" className="block text-black font-medium mb-2">Amount Given</label>
+                  <input type="number" id="amount-given" name="amount_given" className="mb-4 p-2 border rounded w-full" />
 
-                <label htmlFor="withdraw-date" className="block text-black font-medium mb-2">Date</label>
-                <input type="date" id="withdraw-date" name="withdraw_date" className="mb-4 p-2 border rounded w-full" required />
+                  <label htmlFor="withdraw-date" className="block text-black font-medium mb-2">Date</label>
+                  <input type="date" id="withdraw-date" name="withdraw_date" className="mb-4 p-2 border rounded w-full" required />
+                </>
+              ) : (
+                <>
+                  <label htmlFor="saving-amount" className="block text-black font-medium mb-2">Saving Amount</label>
+                  <input type="number" id="saving-amount" name="saving_amount" className="mb-4 p-2 border rounded w-full" required />
 
-                <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded">Submit</button>
-              </form>
-            ) : (
-              <form id="register-savings-form" onSubmit={handleFormSubmit}>
-                <label htmlFor="group-name" className="block text-black font-medium mb-2">Group Name</label>
-                <select
-                  id="group-name"
-                  name="group_name"
-                  className="mb-4 p-2 border rounded w-full"
-                  value={selectedGroup}
-                  onChange={handleGroupChange}
-                  required
-                >
-                  <option value="">Select a Group</option>
-                  {groups.map(group => (
-                    <option key={group.name} value={group.name}>{group.name}</option>
-                  ))}
-                </select>
+                  <label htmlFor="saving-date" className="block text-black font-medium mb-2">Saving Date</label>
+                  <input type="date" id="saving-date" name="saving_date" className="mb-4 p-2 border rounded w-full" required />
+                </>
+              )}
 
-                <label htmlFor="member-name" className="block text-black font-medium mb-2">Member Name</label>
-                <select
-                  id="member-name"
-                  name="member_name"
-                  className="mb-4 p-2 border rounded w-full"
-                  required
-                >
-                  <option value="">Select a Member</option>
-                  {members.map(member => (
-                    <option key={member.name} value={member.name}>{member.name}</option>
-                  ))}
-                </select>
-
-                <label htmlFor="saving-amount" className="block text-black font-medium mb-2">Saving Amount</label>
-                <input type="number" id="saving-amount" name="saving_amount" className="mb-4 p-2 border rounded w-full" required />
-
-                <label htmlFor="saving-date" className="block text-black font-medium mb-2">Saving Date</label>
-                <input type="date" id="saving-date" name="saving_date" className="mb-4 p-2 border rounded w-full" required />
-
-                <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded">Submit</button>
-              </form>
-            )}
+              <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded">Submit</button>
+            </form>
           </div>
         </main>
       </div>
@@ -199,7 +131,6 @@ const ManageSavings = ({ email }) => {
 };
 
 export default ManageSavings;
-
 
 
 
