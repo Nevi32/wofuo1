@@ -1,38 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import { Search, X, Edit } from 'lucide-react';
+import { getMembers } from '../utils/membersutil'; // Import the getMembers function
 
 const GroupPage = ({ email }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [editingGroupName, setEditingGroupName] = useState(false);
-  const [groups, setGroups] = useState([
-    { 
-      id: 1, 
-      name: 'Group A', 
-      memberCount: 5, 
-      members: [
-        { name: 'John Doe', status: 'Chairperson' },
-        { name: 'Jane Smith', status: 'Regular Member' },
-        { name: 'Alice Johnson', status: 'Regular Member' },
-        { name: 'Bob Wilson', status: 'Regular Member' },
-        { name: 'Eva Brown', status: 'Regular Member' },
-      ]
-    },
-    { 
-      id: 2, 
-      name: 'Group B', 
-      memberCount: 3, 
-      members: [
-        { name: 'Charlie Davis', status: 'Chairperson' },
-        { name: 'Diana Miller', status: 'Regular Member' },
-        { name: 'Frank Thomas', status: 'Regular Member' },
-      ]
-    },
-    // Add more groups as needed
-  ]);
+  const [groups, setGroups] = useState([]);
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const members = await getMembers();
+        const groupedMembers = members.reduce((acc, member) => {
+          const groupName = member.groupName || 'Unassigned';
+          if (!acc[groupName]) {
+            acc[groupName] = {
+              id: acc.length + 1,
+              name: groupName,
+              memberCount: 0,
+              members: []
+            };
+          }
+          acc[groupName].members.push({
+            name: member.fullName,
+            status: member.memberStatus
+          });
+          acc[groupName].memberCount++;
+          return acc;
+        }, {});
+        setGroups(Object.values(groupedMembers));
+      } catch (error) {
+        console.error("Failed to fetch members:", error);
+      }
+    };
+    fetchMembers();
+  }, []);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
@@ -156,4 +162,5 @@ const GroupPage = ({ email }) => {
 };
 
 export default GroupPage;
+
 

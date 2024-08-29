@@ -1,18 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
+import { addMember } from '../utils/membersutil';
+import Notification from './Notification';
 
 const RegisterMember = ({ email }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notification, setNotification] = useState(null);
   const location = useLocation();
+
+  useEffect(() => {
+    // Initialize the database when the component mounts
+    // initMemberDB(); // This line is not needed anymore as initDB is used in addMember
+  }, []);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    // Handle form submission here
-    console.log('Form submitted');
+    const formData = new FormData(event.target);
+    const memberData = {
+      fullName: formData.get('full_name'),
+      nationalId: formData.get('national_id'),
+      phoneNumber: formData.get('phone_number'),
+      dateOfBirth: formData.get('date_of_birth'),
+      groupName: formData.get('group_name'),
+      memberStatus: formData.get('member_status'),
+      county: formData.get('county'),
+      subCounty: formData.get('sub_county'),
+      location: formData.get('location'),
+      ward: formData.get('ward'),
+      village: formData.get('village'),
+      nextOfKinFullName: formData.get('next_of_kin_full_name'),
+      nextOfKinIdNumber: formData.get('next_of_kin_id_number'),
+      nextOfKinPhoneNumber: formData.get('next_of_kin_phone_number'),
+      nextOfKinRelationship: formData.get('next_of_kin_relationship'),
+      registrationFee: formData.get('registration_fee'),
+      passbookFee: formData.get('passbook_fee'),
+      nextOfKinFormFee: formData.get('next_of_kin_form_fee'),
+    };
+
+    try {
+      await addMember(memberData);
+      setNotification({ message: 'Member registered successfully!', type: 'success' });
+      document.getElementById('register-member-form').reset(); // Reset form fields after successful submission
+    } catch (error) {
+      setNotification({ message: 'Failed to register member. Please try again.', type: 'error' });
+    }
+  };
+
+  const handleNotificationClose = () => {
+    setNotification(null); // Clear the notification when it's closed
   };
 
   return (
@@ -121,7 +160,7 @@ const RegisterMember = ({ email }) => {
                       />
                     </div>
                     <div>
-                      <label htmlFor="sub_county" className="block text-sm font-medium text-gray-700">Sub County</label>
+                      <label htmlFor="sub_county" className="block text-sm font-medium text-gray-700">Sub-County</label>
                       <input 
                         type="text" 
                         id="sub_county" 
@@ -210,8 +249,8 @@ const RegisterMember = ({ email }) => {
                   </div>
                 </section>
 
-                 {/* Additional Fees */}
-                 <section>
+                {/* Additional Fees */}
+                <section>
                   <h2 className="text-xl font-semibold text-purple-700 mb-4">Additional Fees</h2>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
@@ -245,8 +284,11 @@ const RegisterMember = ({ email }) => {
           </div>
         </main>
       </div>
+      {notification && <Notification message={notification.message} type={notification.type} onClose={handleNotificationClose} />}
     </div>
   );
 };
 
 export default RegisterMember;
+
+

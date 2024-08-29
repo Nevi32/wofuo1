@@ -1,46 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import { Search, X, Edit, Trash } from 'lucide-react';
+import { getMembers, updateMember } from '../utils/membersutil'; // Adjust the import path as necessary
 
 const MembersPage = ({ email }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingMember, setEditingMember] = useState(null);
-  const [members, setMembers] = useState([
-    { id: 1, firstName: 'Lucy', lastName: 'Njeri', group: 'Group A', phone: '1234567890', email: 'lucy@example.com' },
-    { id: 2, firstName: 'John', lastName: 'Doe', group: 'Group B', phone: '0987654321', email: 'john@example.com' },
-    // Add more members as needed
-  ]);
+  const [members, setMembers] = useState([]);
 
   const location = useLocation();
 
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  useEffect(() => {
+    // Fetch members data when the component mounts
+    const fetchMembers = async () => {
+      const memberData = await getMembers(); // Fetch data from utility
+      setMembers(memberData);
+    };
+    
+    fetchMembers();
+  }, []);
 
-  const getInitials = (firstName, lastName) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-  };
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
 
   const filteredMembers = members.filter(member =>
-    `${member.firstName} ${member.lastName} ${member.group}`.toLowerCase().includes(searchTerm.toLowerCase())
+    `${member.fullName} ${member.groupName}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleEdit = (member) => {
     setEditingMember({ ...member });
   };
 
-  const handleSave = () => {
-    setMembers(members.map(m => m.id === editingMember.id ? editingMember : m));
+  const handleSave = async () => {
+    // Save updated member data
+    await updateMember(editingMember); // Update localStorage
+    setMembers(members.map(m => m.nationalId === editingMember.nationalId ? editingMember : m));
     setEditingMember(null);
   };
 
   const handleInputChange = (field, value) => {
     setEditingMember({ ...editingMember, [field]: value });
+  };
+
+  const getInitials = (fullName) => {
+    const names = fullName.split(' ');
+    if (names.length < 2) return fullName.charAt(0).toUpperCase(); // Handle cases with less than 2 names
+    return `${names[0].charAt(0)}${names[1].charAt(0)}`.toUpperCase();
   };
 
   return (
@@ -67,18 +78,33 @@ const MembersPage = ({ email }) => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
               {filteredMembers.map(member => (
-                <div key={member.id} className="bg-white rounded-lg shadow-md p-4">
+                <div key={member.nationalId} className="bg-white rounded-lg shadow-md p-4">
                   <div className="flex items-center mb-4">
                     <div className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold text-lg mr-4">
-                      {getInitials(member.firstName, member.lastName)}
+                      {getInitials(member.fullName)}
                     </div>
                     <div>
-                      <h3 className="font-bold text-black">{`${member.firstName} ${member.lastName}`}</h3>
-                      <p className="text-sm text-gray-600">{member.group}</p>
+                      <h3 className="font-bold text-black">{member.fullName}</h3>
+                      <p className="text-sm text-gray-600">{member.groupName}</p>
                     </div>
                   </div>
-                  <p className="text-sm text-gray-600 mb-2">Phone: {member.phone}</p>
-                  <p className="text-sm text-gray-600 mb-4">Email: {member.email}</p>
+                  <p className="text-sm text-gray-600 mb-2">Phone: {member.phoneNumber}</p>
+                  <p className="text-sm text-gray-600 mb-2">Location: {member.location}</p>
+                  <p className="text-sm text-gray-600 mb-2">County: {member.county}</p>
+                  <p className="text-sm text-gray-600 mb-2">Date of Birth: {member.dateOfBirth}</p>
+                  <p className="text-sm text-gray-600 mb-2">Member Status: {member.memberStatus}</p>
+                  <p className="text-sm text-gray-600 mb-2">Sub-County: {member.subCounty}</p>
+                  <p className="text-sm text-gray-600 mb-2">Village: {member.village}</p>
+                  <p className="text-sm text-gray-600 mb-4">Ward: {member.ward}</p>
+                  <h4 className="font-semibold text-gray-800 mb-2">Next of Kin</h4>
+                  <p className="text-sm text-gray-600 mb-2">Full Name: {member.nextOfKinFullName}</p>
+                  <p className="text-sm text-gray-600 mb-2">ID Number: {member.nextOfKinIdNumber}</p>
+                  <p className="text-sm text-gray-600 mb-2">Phone Number: {member.nextOfKinPhoneNumber}</p>
+                  <p className="text-sm text-gray-600 mb-4">Relationship: {member.nextOfKinRelationship}</p>
+                  <h4 className="font-semibold text-gray-800 mb-2">Fees</h4>
+                  <p className="text-sm text-gray-600 mb-2">Next of Kin Form Fee: {member.nextOfKinFormFee}</p>
+                  <p className="text-sm text-gray-600 mb-2">Passbook Fee: {member.passbookFee}</p>
+                  <p className="text-sm text-gray-600 mb-4">Registration Fee: {member.registrationFee}</p>
                   <div className="flex justify-end">
                     <button onClick={() => handleEdit(member)} className="text-purple-600 mr-2">
                       <Edit size={20} />
@@ -104,60 +130,51 @@ const MembersPage = ({ email }) => {
               </button>
             </div>
             <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
+              {/* Form fields for editing */}
               <div className="mb-4">
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">First Name</label>
+                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">Full Name</label>
                 <input
                   type="text"
-                  id="firstName"
-                  value={editingMember.firstName}
-                  onChange={(e) => handleInputChange('firstName', e.target.value)}
+                  id="fullName"
+                  value={editingMember.fullName}
+                  onChange={(e) => handleInputChange('fullName', e.target.value)}
                   className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 text-black"
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">Last Name</label>
+                <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">Phone Number</label>
                 <input
                   type="text"
-                  id="lastName"
-                  value={editingMember.lastName}
-                  onChange={(e) => handleInputChange('lastName', e.target.value)}
+                  id="phoneNumber"
+                  value={editingMember.phoneNumber}
+                  onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
                   className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 text-black"
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="group" className="block text-sm font-medium text-gray-700">Group</label>
+                <label htmlFor="location" className="block text-sm font-medium text-gray-700">Location</label>
                 <input
                   type="text"
-                  id="group"
-                  value={editingMember.group}
-                  onChange={(e) => handleInputChange('group', e.target.value)}
+                  id="location"
+                  value={editingMember.location}
+                  onChange={(e) => handleInputChange('location', e.target.value)}
                   className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 text-black"
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone</label>
+                <label htmlFor="county" className="block text-sm font-medium text-gray-700">County</label>
                 <input
-                  type="tel"
-                  id="phone"
-                  value={editingMember.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  type="text"
+                  id="county"
+                  value={editingMember.county}
+                  onChange={(e) => handleInputChange('county', e.target.value)}
                   className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 text-black"
                 />
               </div>
-              <div className="mb-6">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                <input
-                  type="email"
-                  id="email"
-                  value={editingMember.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 text-black"
-                />
-              </div>
+              {/* Add more fields as needed */}
               <div className="flex justify-end">
-                <button type="submit" className="bg-purple-600 text-white px-4 py-2 rounded-md">
-                  Save
-                </button>
+                <button type="button" onClick={() => setEditingMember(null)} className="bg-gray-300 text-black px-4 py-2 rounded-md mr-2">Cancel</button>
+                <button type="submit" className="bg-purple-600 text-white px-4 py-2 rounded-md">Save</button>
               </div>
             </form>
           </div>
@@ -168,4 +185,8 @@ const MembersPage = ({ email }) => {
 };
 
 export default MembersPage;
+
+
+
+
 

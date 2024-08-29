@@ -1,7 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu } from 'lucide-react';
 
-const Navbar = ({ email, toggleSidebar }) => {
+const Navbar = ({ toggleSidebar }) => {
+  const [email, setEmail] = useState('');
+  
+  useEffect(() => {
+    const storedUser = sessionStorage.getItem('currentUser');
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      setEmail(user.email);
+    }
+  }, []);
+
   const userInitials = email ? email.split('@')[0].substring(0, 2).toUpperCase() : '??';
 
   return (
@@ -30,4 +40,5 @@ const Navbar = ({ email, toggleSidebar }) => {
 };
 
 export default Navbar;
+
 

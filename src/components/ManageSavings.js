@@ -1,16 +1,88 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
+import Notification from './Notification';
+import { recordWithdrawal, recordSaving } from '../utils/savingWithdawlUtil';
+import { getGroups, getMembersByGroup } from '../utils/membersutil';
 
 const ManageSavings = ({ email }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeForm, setActiveForm] = useState('withdrawal');
+  const [notification, setNotification] = useState(null);
+  const [groups, setGroups] = useState([]);
+  const [members, setMembers] = useState([]);
+  const [selectedGroup, setSelectedGroup] = useState('');
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   const handleFormToggle = (form) => {
     setActiveForm(form);
   };
+
+  // Fetch groups when the component mounts
+  const fetchGroups = async () => {
+    try {
+      const groupsData = await getGroups();
+      setGroups(groupsData);
+    } catch (error) {
+      setNotification({ message: 'Error fetching groups.', type: 'error' });
+    }
+  };
+
+  // Fetch members when the selected group changes
+  const handleGroupChange = async (event) => {
+    const groupName = event.target.value;
+    setSelectedGroup(groupName);
+    try {
+      const membersData = await getMembersByGroup(groupName);
+      setMembers(membersData);
+    } catch (error) {
+      setNotification({ message: 'Error fetching members.', type: 'error' });
+    }
+  };
+
+  // Handle form submission
+  const handleFormSubmit = async (event) => {
+    event.preventDefault();
+    const form = event.target;
+
+    try {
+      if (activeForm === 'withdrawal') {
+        await recordWithdrawal(
+          form['group_name'].value,
+          form['member_name'].value,
+          form['withdraw_amount'].value,
+          form['company_payout'].value,
+          form['amount_given'].value,
+          form['withdraw_date'].value
+        );
+        setNotification({ message: 'Withdrawal recorded successfully!', type: 'success' });
+      } else {
+        await recordSaving(
+          form['group_name'].value,
+          form['member_name'].value,
+          form['saving_amount'].value,
+          form['saving_date'].value
+        );
+        setNotification({ message: 'Savings recorded successfully!', type: 'success' });
+      }
+    } catch (error) {
+      setNotification({ message: error.message, type: 'error' });
+    }
+
+    form.reset(); // Reset the form fields
+  };
+
+  useEffect(() => {
+    fetchGroups();
+  }, []);
+
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 5000); // Hide notification after 5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
 
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden">
@@ -34,18 +106,36 @@ const ManageSavings = ({ email }) => {
                 Register Savings
               </button>
             </div>
+            {notification && <Notification message={notification.message} type={notification.type} />}
+
             {activeForm === 'withdrawal' ? (
-              <form id="withdraw-savings-form" action="recordwithdrawal.php" method="post">
+              <form id="withdraw-savings-form" onSubmit={handleFormSubmit}>
                 <label htmlFor="withdraw-group-name" className="block text-black font-medium mb-2">Group Name</label>
-                <select id="withdraw-group-name" name="group_name" className="mb-4 p-2 border rounded w-full" required>
+                <select
+                  id="withdraw-group-name"
+                  name="group_name"
+                  className="mb-4 p-2 border rounded w-full"
+                  value={selectedGroup}
+                  onChange={handleGroupChange}
+                  required
+                >
                   <option value="">Select a Group</option>
-                  {/* Options populated dynamically */}
+                  {groups.map(group => (
+                    <option key={group.name} value={group.name}>{group.name}</option>
+                  ))}
                 </select>
 
                 <label htmlFor="withdraw-member-name" className="block text-black font-medium mb-2">Member Name</label>
-                <select id="withdraw-member-name" name="member_name" className="mb-4 p-2 border rounded w-full" required>
+                <select
+                  id="withdraw-member-name"
+                  name="member_name"
+                  className="mb-4 p-2 border rounded w-full"
+                  required
+                >
                   <option value="">Select a Member</option>
-                  {/* Options populated dynamically */}
+                  {members.map(member => (
+                    <option key={member.name} value={member.name}>{member.name}</option>
+                  ))}
                 </select>
 
                 <label htmlFor="withdraw-amount" className="block text-black font-medium mb-2">Withdrawal Amount</label>
@@ -58,22 +148,38 @@ const ManageSavings = ({ email }) => {
                 <input type="number" id="amount-given" name="amount_given" className="mb-4 p-2 border rounded w-full" readOnly />
 
                 <label htmlFor="withdraw-date" className="block text-black font-medium mb-2">Date</label>
-                <input type="date" id="withdraw-date" name="saving_date" className="mb-4 p-2 border rounded w-full" required />
+                <input type="date" id="withdraw-date" name="withdraw_date" className="mb-4 p-2 border rounded w-full" required />
 
                 <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded">Submit</button>
               </form>
             ) : (
-              <form id="register-savings-form" action="recordsavings.php" method="post">
+              <form id="register-savings-form" onSubmit={handleFormSubmit}>
                 <label htmlFor="group-name" className="block text-black font-medium mb-2">Group Name</label>
-                <select id="group-name" name="group_name" className="mb-4 p-2 border rounded w-full" required>
+                <select
+                  id="group-name"
+                  name="group_name"
+                  className="mb-4 p-2 border rounded w-full"
+                  value={selectedGroup}
+                  onChange={handleGroupChange}
+                  required
+                >
                   <option value="">Select a Group</option>
-                  {/* Options populated dynamically */}
+                  {groups.map(group => (
+                    <option key={group.name} value={group.name}>{group.name}</option>
+                  ))}
                 </select>
 
                 <label htmlFor="member-name" className="block text-black font-medium mb-2">Member Name</label>
-                <select id="member-name" name="member_name" className="mb-4 p-2 border rounded w-full" required>
+                <select
+                  id="member-name"
+                  name="member_name"
+                  className="mb-4 p-2 border rounded w-full"
+                  required
+                >
                   <option value="">Select a Member</option>
-                  {/* Options populated dynamically */}
+                  {members.map(member => (
+                    <option key={member.name} value={member.name}>{member.name}</option>
+                  ))}
                 </select>
 
                 <label htmlFor="saving-amount" className="block text-black font-medium mb-2">Saving Amount</label>
