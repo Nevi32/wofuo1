@@ -2,13 +2,7 @@ import React from 'react';
 import { Menu } from 'lucide-react';
 
 const Navbar = ({ email, toggleSidebar }) => {
-  // Default to empty string if email is undefined
-  const safeEmail = email || '';
-  
-  // Only try to get initials if email is not empty
-  const userInitials = safeEmail 
-    ? safeEmail.split('@')[0].substring(0, 2).toUpperCase()
-    : '??';
+  const userInitials = email ? email.split('@')[0].substring(0, 2).toUpperCase() : '??';
 
   return (
     <nav className="bg-white shadow-sm">
@@ -24,7 +18,7 @@ const Navbar = ({ email, toggleSidebar }) => {
             <h1 className="ml-2 text-xl font-semibold lg:ml-0">Dashboard</h1>
           </div>
           <div className="flex items-center">
-            {safeEmail && <span className="mr-4 hidden sm:inline">{safeEmail}</span>}
+            {email && <span className="mr-4 hidden sm:inline">{email}</span>}
             <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white">
               {userInitials}
             </div>
@@ -36,3 +30,4 @@ const Navbar = ({ email, toggleSidebar }) => {
 };
 
 export default Navbar;
+
