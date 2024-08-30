@@ -12,7 +12,8 @@ const ManageVisits = ({ email }) => {
   const [visitData, setVisitData] = useState({
     date: '',
     time: '',
-    nextVisitDate: ''
+    nextVisitDate: '',
+     groupName: ''
   });
   const [notification, setNotification] = useState(null);
 

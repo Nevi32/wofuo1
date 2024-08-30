@@ -64,7 +64,8 @@ const LoanPage = ({ email }) => {
       <div className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} activePath="/loans" />
       </div>
-      <div className="flex-1 flex flex-col overflow-hidden">
+      
+      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${selectedLoan ? 'blur-sm' : ''}`}>
         <Navbar email={email} toggleSidebar={toggleSidebar} />
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -229,10 +230,16 @@ const LoanPage = ({ email }) => {
                     <span className="text-gray-600">KSH {selectedLoan.companyPayout}</span>
                   </li>
                 )}
-                {selectedLoan.guarantors && (
-                  <li className="flex justify-between items-center">
-                    <span className="text-black">Guarantors:</span>
-                    <span className="text-gray-600">{selectedLoan.guarantors.join(', ')}</span>
+                {selectedLoan.guarantors && selectedLoan.guarantors.length > 0 && (
+                  <li className="flex flex-col">
+                    <span className="text-black font-semibold mb-1">Guarantors:</span>
+                    <ul className="list-disc pl-5">
+                      {selectedLoan.guarantors.map((guarantor, index) => (
+                        <li key={index} className="text-gray-600">
+                          {guarantor.name} ({guarantor.group})
+                        </li>
+                      ))}
+                    </ul>
                   </li>
                 )}
                 {selectedLoan.loanFormFee && (

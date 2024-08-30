@@ -106,14 +106,16 @@ const RegisterMember = ({ email }) => {
                       />
                     </div>
                     <div>
-                      <label htmlFor="date_of_birth" className="block text-sm font-medium text-gray-700">Date of Birth</label>
+                    <label htmlFor="date_of_birth" className="block text-sm font-medium text-gray-700">Date of Birth</label>
                       <input 
-                        type="date" 
+                        type="text" 
                         id="date_of_birth" 
                         name="date_of_birth" 
                         required 
+                        placeholder="YYYY-MM-DD"
+                        pattern="\d{4}-\d{2}-\d{2}"
+                        onInput={handleUpperCase}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black" 
-                        pattern="\d{4}-\d{2}-\d{2}" // This pattern ensures the date is in YYYY-MM-DD format
                       />
 
                     </div>

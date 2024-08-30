@@ -48,6 +48,7 @@ export const recordVisit = async (visitData, tableData) => {
     visitDate: visitData.date,
     visitTime: visitData.time,
     nextVisitDate: visitData.nextVisitDate,
+    groupName: visitData.groupName,
     members: tableData.map(memberData => ({
       memberName: memberData.memberName,
       totalLoanGiven: memberData.totalLoanGiven,
