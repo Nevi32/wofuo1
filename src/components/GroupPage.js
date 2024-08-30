@@ -78,7 +78,7 @@ const GroupPage = ({ email }) => {
       <div className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} activePath="/groups" />
       </div>
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className={`flex-1 flex flex-col overflow-hidden ${selectedGroup ? 'filter blur-sm' : ''}`}>
         <Navbar email={email} toggleSidebar={toggleSidebar} />
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -114,8 +114,8 @@ const GroupPage = ({ email }) => {
       </div>
 
       {selectedGroup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-60">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-60">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto z-70">
             <div className="flex justify-between items-center mb-4">
               {editingGroupName ? (
                 <input
@@ -162,5 +162,7 @@ const GroupPage = ({ email }) => {
 };
 
 export default GroupPage;
+
+
 
 

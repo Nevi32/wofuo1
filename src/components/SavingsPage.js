@@ -136,7 +136,16 @@ const SavingsPage = ({ email }) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-60">
           <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-black">{selectedItem.memberName}</h3>
+              {editingItem ? (
+                <input
+                  type="text"
+                  value={selectedItem.memberName}
+                  onChange={(e) => setSelectedItem({ ...selectedItem, memberName: e.target.value })}
+                  className="text-lg font-bold text-black border-b-2 border-purple-600 focus:outline-none"
+                />
+              ) : (
+                <h3 className="text-lg font-bold text-black">{selectedItem.memberName}</h3>
+              )}
               <div className="flex items-center">
                 {editingItem ? (
                   <button
@@ -192,4 +201,5 @@ const SavingsPage = ({ email }) => {
 };
 
 export default SavingsPage;
+
 

@@ -113,7 +113,9 @@ const RegisterMember = ({ email }) => {
                         name="date_of_birth" 
                         required 
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black" 
+                        pattern="\d{4}-\d{2}-\d{2}" // This pattern ensures the date is in YYYY-MM-DD format
                       />
+
                     </div>
                   </div>
                 </section>
@@ -139,7 +141,6 @@ const RegisterMember = ({ email }) => {
                         id="member_status" 
                         name="member_status" 
                         required 
-                        onInput={handleUpperCase}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black"
                       >
                         <option value="chairperson">Chairperson</option>
@@ -150,6 +151,7 @@ const RegisterMember = ({ email }) => {
                         <option value="prefect">Prefect</option>
                         <option value="regular_member">Regular Member</option>
                       </select>
+
                     </div>
                   </div>
                 </section>

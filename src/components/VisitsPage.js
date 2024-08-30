@@ -58,7 +58,8 @@ const VisitsPage = ({ email }) => {
       <div className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} activePath="/visits" />
       </div>
-      <div className="flex-1 flex flex-col overflow-hidden">
+      
+      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${selectedVisit ? 'blur-sm' : ''}`}>
         <Navbar email={email} toggleSidebar={toggleSidebar} />
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -158,6 +159,7 @@ const VisitsPage = ({ email }) => {
 };
 
 export default VisitsPage;
+
 
 
 
