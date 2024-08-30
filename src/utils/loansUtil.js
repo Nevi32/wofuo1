@@ -5,6 +5,9 @@ export const recordGroupLoan = async (groupName, loanAmount, period, companyPayo
   await initDB();
   const db = await getDB();
   
+  // Convert group name to uppercase
+  const upperGroupName = groupName.toUpperCase();
+
   if (!db.groupLoans) {
     db.groupLoans = [];
   }
@@ -12,7 +15,7 @@ export const recordGroupLoan = async (groupName, loanAmount, period, companyPayo
   db.groupLoans.push({
     id: Date.now(),
     type: 'group',
-    name: groupName,
+    name: upperGroupName,
     amount: loanAmount,
     term: period,
     interest: interestAmount,
@@ -23,13 +26,17 @@ export const recordGroupLoan = async (groupName, loanAmount, period, companyPayo
   });
   
   await saveDB(db);
-  return { groupName, loanAmount, dateIssued };
+  return { groupName: upperGroupName, loanAmount, dateIssued };
 };
 
 // Function to record a long-term loan
 export const recordLongTermLoan = async (groupName, memberName, guarantors, loanAmount, period, interestAmount, loanFormFee, dateIssued, dateToRepay) => {
   await initDB();
   const db = await getDB();
+
+  // Convert group and member names to uppercase
+  const upperGroupName = groupName.toUpperCase();
+  const upperMemberName = memberName.toUpperCase();
   
   if (!db.longTermLoans) {
     db.longTermLoans = [];
@@ -38,7 +45,7 @@ export const recordLongTermLoan = async (groupName, memberName, guarantors, loan
   db.longTermLoans.push({
     id: Date.now(),
     type: 'long-term',
-    name: `${groupName} - ${memberName}`,
+    name: `${upperGroupName} - ${upperMemberName}`,
     amount: loanAmount,
     term: period,
     interest: interestAmount,
@@ -50,13 +57,17 @@ export const recordLongTermLoan = async (groupName, memberName, guarantors, loan
   });
   
   await saveDB(db);
-  return { groupName, memberName, loanAmount, dateIssued };
+  return { groupName: upperGroupName, memberName: upperMemberName, loanAmount, dateIssued };
 };
 
 // Function to record a short-term loan
 export const recordShortTermLoan = async (groupName, memberName, guarantors, loanAmount, period, interestAmount, loanFormFee, dateIssued, dateToRepay) => {
   await initDB();
   const db = await getDB();
+
+  // Convert group and member names to uppercase
+  const upperGroupName = groupName.toUpperCase();
+  const upperMemberName = memberName.toUpperCase();
   
   if (!db.shortTermLoans) {
     db.shortTermLoans = [];
@@ -65,7 +76,7 @@ export const recordShortTermLoan = async (groupName, memberName, guarantors, loa
   db.shortTermLoans.push({
     id: Date.now(),
     type: 'short-term',
-    name: `${groupName} - ${memberName}`,
+    name: `${upperGroupName} - ${upperMemberName}`,
     amount: loanAmount,
     term: period,
     interest: interestAmount,
@@ -77,7 +88,7 @@ export const recordShortTermLoan = async (groupName, memberName, guarantors, loa
   });
   
   await saveDB(db);
-  return { groupName, memberName, loanAmount, dateIssued };
+  return { groupName: upperGroupName, memberName: upperMemberName, loanAmount, dateIssued };
 };
 
 // Function to fetch all loans

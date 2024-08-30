@@ -6,6 +6,10 @@ export const recordWithdrawal = async (groupName, memberName, withdrawAmount, co
 
   const db = await getDB();
 
+  // Convert group and member names to uppercase
+  const upperGroupName = groupName.toUpperCase();
+  const upperMemberName = memberName.toUpperCase();
+
   // Ensure the withdrawals array exists
   if (!db.withdrawals) {
     db.withdrawals = [];
@@ -13,8 +17,8 @@ export const recordWithdrawal = async (groupName, memberName, withdrawAmount, co
 
   // Record the withdrawal
   db.withdrawals.push({
-    groupName,
-    memberName,
+    groupName: upperGroupName,
+    memberName: upperMemberName,
     withdrawAmount,
     companyPayout,
     amountGiven,
@@ -27,7 +31,7 @@ export const recordWithdrawal = async (groupName, memberName, withdrawAmount, co
   }
 
   const memberTotal = db.totalSavings.find(
-    (entry) => entry.groupName === groupName && entry.memberName === memberName
+    (entry) => entry.groupName === upperGroupName && entry.memberName === upperMemberName
   );
 
   if (memberTotal) {
@@ -35,7 +39,7 @@ export const recordWithdrawal = async (groupName, memberName, withdrawAmount, co
   }
 
   await saveDB(db);
-  return { groupName, memberName, withdrawAmount };
+  return { groupName: upperGroupName, memberName: upperMemberName, withdrawAmount };
 };
 
 // Function to record a saving and update total savings
@@ -44,6 +48,10 @@ export const recordSaving = async (groupName, memberName, savingAmount, savingDa
 
   const db = await getDB();
 
+  // Convert group and member names to uppercase
+  const upperGroupName = groupName.toUpperCase();
+  const upperMemberName = memberName.toUpperCase();
+
   // Ensure the savings array exists
   if (!db.savings) {
     db.savings = [];
@@ -51,8 +59,8 @@ export const recordSaving = async (groupName, memberName, savingAmount, savingDa
 
   // Record the saving
   db.savings.push({
-    groupName,
-    memberName,
+    groupName: upperGroupName,
+    memberName: upperMemberName,
     savingAmount,
     savingDate
   });
@@ -63,21 +71,21 @@ export const recordSaving = async (groupName, memberName, savingAmount, savingDa
   }
 
   const memberTotal = db.totalSavings.find(
-    (entry) => entry.groupName === groupName && entry.memberName === memberName
+    (entry) => entry.groupName === upperGroupName && entry.memberName === upperMemberName
   );
 
   if (memberTotal) {
     memberTotal.totalAmount += parseFloat(savingAmount);
   } else {
     db.totalSavings.push({
-      groupName,
-      memberName,
+      groupName: upperGroupName,
+      memberName: upperMemberName,
       totalAmount: parseFloat(savingAmount)
     });
   }
 
   await saveDB(db);
-  return { groupName, memberName, savingAmount };
+  return { groupName: upperGroupName, memberName: upperMemberName, savingAmount };
 };
 
 // Function to get total savings
@@ -98,8 +106,10 @@ export const getWithdrawals = async () => {
 export const getMemberSavings = async (groupName, memberName) => {
   await initDB();
   const db = await getDB();
+  const upperGroupName = groupName.toUpperCase();
+  const upperMemberName = memberName.toUpperCase();
   return (db.savings || []).filter(saving => 
-    saving.groupName === groupName && saving.memberName === memberName
+    saving.groupName === upperGroupName && saving.memberName === upperMemberName
   );
 };
 
@@ -107,7 +117,9 @@ export const getMemberSavings = async (groupName, memberName) => {
 export const getMemberWithdrawals = async (groupName, memberName) => {
   await initDB();
   const db = await getDB();
+  const upperGroupName = groupName.toUpperCase();
+  const upperMemberName = memberName.toUpperCase();
   return (db.withdrawals || []).filter(withdrawal => 
-    withdrawal.groupName === groupName && withdrawal.memberName === memberName
+    withdrawal.groupName === upperGroupName && withdrawal.memberName === upperMemberName
   );
 };

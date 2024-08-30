@@ -17,6 +17,10 @@ const RegisterMember = ({ email }) => {
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
+  const handleUpperCase = (event) => {
+    event.target.value = event.target.value.toUpperCase();
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
@@ -75,6 +79,7 @@ const RegisterMember = ({ email }) => {
                         id="full_name" 
                         name="full_name" 
                         required 
+                        onInput={handleUpperCase}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black" 
                       />
                     </div>
@@ -85,6 +90,7 @@ const RegisterMember = ({ email }) => {
                         id="national_id" 
                         name="national_id" 
                         required 
+                        onInput={handleUpperCase}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black" 
                       />
                     </div>
@@ -95,6 +101,7 @@ const RegisterMember = ({ email }) => {
                         id="phone_number" 
                         name="phone_number" 
                         required 
+                        onInput={handleUpperCase}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black" 
                       />
                     </div>
@@ -122,6 +129,7 @@ const RegisterMember = ({ email }) => {
                         id="group_name" 
                         name="group_name" 
                         required 
+                        onInput={handleUpperCase}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black" 
                       />
                     </div>
@@ -131,6 +139,7 @@ const RegisterMember = ({ email }) => {
                         id="member_status" 
                         name="member_status" 
                         required 
+                        onInput={handleUpperCase}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black"
                       >
                         <option value="chairperson">Chairperson</option>
@@ -156,6 +165,7 @@ const RegisterMember = ({ email }) => {
                         id="county" 
                         name="county" 
                         required 
+                        onInput={handleUpperCase}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black" 
                       />
                     </div>
@@ -166,6 +176,7 @@ const RegisterMember = ({ email }) => {
                         id="sub_county" 
                         name="sub_county" 
                         required 
+                        onInput={handleUpperCase}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black" 
                       />
                     </div>
@@ -176,6 +187,7 @@ const RegisterMember = ({ email }) => {
                         id="location" 
                         name="location" 
                         required 
+                        onInput={handleUpperCase}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black" 
                       />
                     </div>
@@ -186,6 +198,7 @@ const RegisterMember = ({ email }) => {
                         id="ward" 
                         name="ward" 
                         required 
+                        onInput={handleUpperCase}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black" 
                       />
                     </div>
@@ -196,15 +209,16 @@ const RegisterMember = ({ email }) => {
                         id="village" 
                         name="village" 
                         required 
+                        onInput={handleUpperCase}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black" 
                       />
                     </div>
                   </div>
                 </section>
 
-                {/* Next of Kin Info */}
+                {/* Next of Kin */}
                 <section>
-                  <h2 className="text-xl font-semibold text-purple-700 mb-4">Next of Kin Info</h2>
+                  <h2 className="text-xl font-semibold text-purple-700 mb-4">Next of Kin Details</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="next_of_kin_full_name" className="block text-sm font-medium text-gray-700">Full Name</label>
@@ -213,6 +227,7 @@ const RegisterMember = ({ email }) => {
                         id="next_of_kin_full_name" 
                         name="next_of_kin_full_name" 
                         required 
+                        onInput={handleUpperCase}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black" 
                       />
                     </div>
@@ -223,6 +238,7 @@ const RegisterMember = ({ email }) => {
                         id="next_of_kin_id_number" 
                         name="next_of_kin_id_number" 
                         required 
+                        onInput={handleUpperCase}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black" 
                       />
                     </div>
@@ -233,6 +249,7 @@ const RegisterMember = ({ email }) => {
                         id="next_of_kin_phone_number" 
                         name="next_of_kin_phone_number" 
                         required 
+                        onInput={handleUpperCase}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black" 
                       />
                     </div>
@@ -243,38 +260,54 @@ const RegisterMember = ({ email }) => {
                         id="next_of_kin_relationship" 
                         name="next_of_kin_relationship" 
                         required 
+                        onInput={handleUpperCase}
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black" 
                       />
                     </div>
                   </div>
                 </section>
 
-                {/* Additional Fees */}
+                {/* Fees */}
                 <section>
-                  <h2 className="text-xl font-semibold text-purple-700 mb-4">Additional Fees</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <h2 className="text-xl font-semibold text-purple-700 mb-4">Fees</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="registration_fee" className="block text-sm font-medium text-gray-700">Registration Fee</label>
-                      <input type="number" id="registration_fee" name="registration_fee" defaultValue="200" required 
-                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500" />
+                      <input 
+                        type="number" 
+                        id="registration_fee" 
+                        name="registration_fee" 
+                        required 
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black" 
+                      />
                     </div>
                     <div>
                       <label htmlFor="passbook_fee" className="block text-sm font-medium text-gray-700">Passbook Fee</label>
-                      <input type="number" id="passbook_fee" name="passbook_fee" defaultValue="200" required 
-                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500" />
+                      <input 
+                        type="number" 
+                        id="passbook_fee" 
+                        name="passbook_fee" 
+                        required 
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black" 
+                      />
                     </div>
                     <div>
                       <label htmlFor="next_of_kin_form_fee" className="block text-sm font-medium text-gray-700">Next of Kin Form Fee</label>
-                      <input type="number" id="next_of_kin_form_fee" name="next_of_kin_form_fee" defaultValue="500" required 
-                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500" />
+                      <input 
+                        type="number" 
+                        id="next_of_kin_form_fee" 
+                        name="next_of_kin_form_fee" 
+                        required 
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 text-black" 
+                      />
                     </div>
                   </div>
                 </section>
 
                 <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    className="bg-purple-700 text-white px-6 py-2 rounded-md hover:bg-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
+                  <button 
+                    type="submit" 
+                    className="inline-flex items-center px-4 py-2 bg-purple-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-800 focus:outline-none focus:border-purple-900 focus:ring focus:ring-purple-300 active:bg-purple-900 transition ease-in-out duration-150"
                   >
                     Register Member
                   </button>
@@ -284,7 +317,15 @@ const RegisterMember = ({ email }) => {
           </div>
         </main>
       </div>
-      {notification && <Notification message={notification.message} type={notification.type} onClose={handleNotificationClose} />}
+
+      {/* Notification */}
+      {notification && (
+        <Notification 
+          message={notification.message} 
+          type={notification.type} 
+          onClose={handleNotificationClose} 
+        />
+      )}
     </div>
   );
 };
