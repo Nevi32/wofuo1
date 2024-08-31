@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import { getGroupsAndMembers, recordVisit } from '../utils/visitsUtil';
-import Notification from './Notification'; // Import the Notification component
+import Notification from './Notification';
 
 const ManageVisits = ({ email }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -13,9 +13,10 @@ const ManageVisits = ({ email }) => {
     date: '',
     time: '',
     nextVisitDate: '',
-     groupName: ''
+    groupName: ''
   });
   const [notification, setNotification] = useState(null);
+  const [columnWidths, setColumnWidths] = useState({});
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -31,6 +32,7 @@ const ManageVisits = ({ email }) => {
   const handleGroupChange = (e) => {
     const groupName = e.target.value;
     setSelectedGroup(groupName);
+    setVisitData(prevState => ({ ...prevState, groupName }));
 
     const group = groups.find(group => group.groupName === groupName);
 
@@ -47,7 +49,7 @@ const ManageVisits = ({ email }) => {
         ins: '',
         sharesSavingsCF: '',
         loanCF: '',
-        status: ''
+        status: 'Active'  // Set default status to 'Active'
       }));
 
       setTableData(membersData);
@@ -87,20 +89,33 @@ const ManageVisits = ({ email }) => {
     setNotification(null);
   };
 
+  const handleColumnResize = (columnName, newWidth) => {
+    setColumnWidths(prevWidths => ({
+      ...prevWidths,
+      [columnName]: newWidth
+    }));
+  };
+
+  const tableHeaders = [
+    'Member Names', 'Total Loan Given', 'Loan B/F', 'Shares B/F', 'Total Repaid',
+    'Principal', 'Loan Interest', 'Shares/Savings This Month', 'INS',
+    'Shares/Savings C/F', 'Loan C/F', 'Status'
+  ];
+
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden">
+    <div className="flex h-screen bg-gray-100">
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} activePath="/manage-visits" />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar email={email} toggleSidebar={toggleSidebar} />
-        <main className="flex-1 overflow-y-auto">
-          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <main className={`flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 ${sidebarOpen ? 'ml-64' : ''}`}>
+          <div className="container mx-auto px-6 py-8">
             <h2 className="text-2xl font-bold mb-4 text-black">Manage Visits</h2>
             <form className="mb-8 space-y-4" onSubmit={handleSubmit}>
               <div>
                 <label htmlFor="group_name" className="block text-black font-medium mb-2">Group Name</label>
                 <select
                   id="group_name"
-                  name="group_name"
+                  name="groupName"
                   className="w-full p-2 border rounded text-black"
                   value={selectedGroup}
                   onChange={handleGroupChange}
@@ -114,41 +129,43 @@ const ManageVisits = ({ email }) => {
                   ))}
                 </select>
               </div>
-              <div>
-                <label htmlFor="date" className="block text-black font-medium mb-2">Visit Date</label>
-                <input
-                  type="date"
-                  id="date"
-                  name="date"
-                  value={visitData.date}
-                  onChange={handleVisitDataChange}
-                  className="w-full p-2 border rounded text-black"
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="time" className="block text-black font-medium mb-2">Visit Time</label>
-                <input
-                  type="time"
-                  id="time"
-                  name="time"
-                  value={visitData.time}
-                  onChange={handleVisitDataChange}
-                  className="w-full p-2 border rounded text-black"
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="next_visit" className="block text-black font-medium mb-2">Next Visit Date</label>
-                <input
-                  type="date"
-                  id="next_visit"
-                  name="nextVisitDate"
-                  value={visitData.nextVisitDate}
-                  onChange={handleVisitDataChange}
-                  className="w-full p-2 border rounded text-black"
-                  required
-                />
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label htmlFor="date" className="block text-black font-medium mb-2">Visit Date</label>
+                  <input
+                    type="date"
+                    id="date"
+                    name="date"
+                    value={visitData.date}
+                    onChange={handleVisitDataChange}
+                    className="w-full p-2 border rounded text-black"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="time" className="block text-black font-medium mb-2">Visit Time</label>
+                  <input
+                    type="time"
+                    id="time"
+                    name="time"
+                    value={visitData.time}
+                    onChange={handleVisitDataChange}
+                    className="w-full p-2 border rounded text-black"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="next_visit" className="block text-black font-medium mb-2">Next Visit Date</label>
+                  <input
+                    type="date"
+                    id="next_visit"
+                    name="nextVisitDate"
+                    value={visitData.nextVisitDate}
+                    onChange={handleVisitDataChange}
+                    className="w-full p-2 border rounded text-black"
+                    required
+                  />
+                </div>
               </div>
               <button type="submit" className="bg-blue-500 text-white p-2 rounded">Submit</button>
             </form>
@@ -157,122 +174,69 @@ const ManageVisits = ({ email }) => {
               <table className="w-full border-collapse border border-gray-300">
                 <thead>
                   <tr className="bg-purple-600 text-white">
-                    <th className="p-2 border">Member Names</th>
-                    <th className="p-2 border">Total Loan Given</th>
-                    <th className="p-2 border">Loan B/F</th>
-                    <th className="p-2 border">Shares B/F</th>
-                    <th className="p-2 border">Total Repaid</th>
-                    <th className="p-2 border">Principal</th>
-                    <th className="p-2 border">Loan Interest</th>
-                    <th className="p-2 border">Shares/Savings This Month</th>
-                    <th className="p-2 border">INS</th>
-                    <th className="p-2 border">Shares/Savings C/F</th>
-                    <th className="p-2 border">Loan C/F</th>
-                    <th className="p-2 border">Status</th>
+                    {tableHeaders.map((header, index) => (
+                      <th
+                        key={index}
+                        className="p-2 border relative"
+                        style={{ minWidth: columnWidths[header] || '150px' }}
+                      >
+                        {header}
+                        <div
+                          className="absolute right-0 top-0 h-full w-1 cursor-col-resize"
+                          onMouseDown={(e) => {
+                            const startX = e.pageX;
+                            const startWidth = columnWidths[header] || 150;
+                            
+                            const handleMouseMove = (moveEvent) => {
+                              const newWidth = startWidth + (moveEvent.pageX - startX);
+                              handleColumnResize(header, `${newWidth}px`);
+                            };
+                            
+                            const handleMouseUp = () => {
+                              document.removeEventListener('mousemove', handleMouseMove);
+                              document.removeEventListener('mouseup', handleMouseUp);
+                            };
+                            
+                            document.addEventListener('mousemove', handleMouseMove);
+                            document.addEventListener('mouseup', handleMouseUp);
+                          }}
+                        />
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {tableData.map((row, index) => (
                     <tr key={index}>
-                      <td className="p-2 border">
-                        <input
-                          type="text"
-                          value={row.memberName}
-                          onChange={(e) => handleInputChange(index, 'memberName', e.target.value)}
-                          className="w-full p-1 text-black"
-                          readOnly
-                        />
-                      </td>
-                      <td className="p-2 border">
-                        <input
-                          type="number"
-                          value={row.totalLoanGiven}
-                          onChange={(e) => handleInputChange(index, 'totalLoanGiven', e.target.value)}
-                          className="w-full p-1 text-black"
-                        />
-                      </td>
-                      <td className="p-2 border">
-                        <input
-                          type="number"
-                          value={row.loanBF}
-                          onChange={(e) => handleInputChange(index, 'loanBF', e.target.value)}
-                          className="w-full p-1 text-black"
-                        />
-                      </td>
-                      <td className="p-2 border">
-                        <input
-                          type="number"
-                          value={row.sharesBF}
-                          onChange={(e) => handleInputChange(index, 'sharesBF', e.target.value)}
-                          className="w-full p-1 text-black"
-                        />
-                      </td>
-                      <td className="p-2 border">
-                        <input
-                          type="number"
-                          value={row.totalRepaid}
-                          onChange={(e) => handleInputChange(index, 'totalRepaid', e.target.value)}
-                          className="w-full p-1 text-black"
-                        />
-                      </td>
-                      <td className="p-2 border">
-                        <input
-                          type="number"
-                          value={row.principal}
-                          onChange={(e) => handleInputChange(index, 'principal', e.target.value)}
-                          className="w-full p-1 text-black"
-                        />
-                      </td>
-                      <td className="p-2 border">
-                        <input
-                          type="number"
-                          value={row.loanInterest}
-                          onChange={(e) => handleInputChange(index, 'loanInterest', e.target.value)}
-                          className="w-full p-1 text-black"
-                        />
-                      </td>
-                      <td className="p-2 border">
-                        <input
-                          type="number"
-                          value={row.sharesSavingsThisMonth}
-                          onChange={(e) => handleInputChange(index, 'sharesSavingsThisMonth', e.target.value)}
-                          className="w-full p-1 text-black"
-                        />
-                      </td>
-                      <td className="p-2 border">
-                        <input
-                          type="number"
-                          value={row.ins}
-                          onChange={(e) => handleInputChange(index, 'ins', e.target.value)}
-                          className="w-full p-1 text-black"
-                        />
-                      </td>
-                      <td className="p-2 border">
-                        <input
-                          type="number"
-                          value={row.sharesSavingsCF}
-                          onChange={(e) => handleInputChange(index, 'sharesSavingsCF', e.target.value)}
-                          className="w-full p-1 text-black"
-                        />
-                      </td>
-                      <td className="p-2 border">
-                        <input
-                          type="number"
-                          value={row.loanCF}
-                          onChange={(e) => handleInputChange(index, 'loanCF', e.target.value)}
-                          className="w-full p-1 text-black"
-                        />
-                      </td>
-                      <td className="p-2 border">
-                        <select
-                          value={row.status}
-                          onChange={(e) => handleInputChange(index, 'status', e.target.value)}
-                          className="w-full p-1 text-black"
-                        >
-                          <option>Active</option>
-                          <option>Inactive</option>
-                        </select>
-                      </td>
+                      {Object.keys(row).map((key, cellIndex) => (
+                        <td key={cellIndex} className="p-2 border">
+                          {key === 'memberName' ? (
+                            <input
+                              type="text"
+                              value={row[key]}
+                              onChange={(e) => handleInputChange(index, key, e.target.value)}
+                              className="w-full p-1 text-black"
+                              readOnly
+                            />
+                          ) : key === 'status' ? (
+                            <select
+                              value={row[key]}
+                              onChange={(e) => handleInputChange(index, key, e.target.value)}
+                              className="w-full p-1 text-black"
+                            >
+                              <option value="Active">Active</option>
+                              <option value="Inactive">Inactive</option>
+                            </select>
+                          ) : (
+                            <input
+                              type="number"
+                              value={row[key]}
+                              onChange={(e) => handleInputChange(index, key, e.target.value)}
+                              className="w-full p-1 text-black"
+                            />
+                          )}
+                        </td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>

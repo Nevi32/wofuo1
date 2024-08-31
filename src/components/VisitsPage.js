@@ -26,7 +26,8 @@ const VisitsPage = ({ email }) => {
   };
 
   const filteredVisits = visits.filter(visit =>
-    visit.visitDate.toLowerCase().includes(searchTerm.toLowerCase())
+    visit.groupName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    visit.visitDate?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleVisitClick = (visit) => {
@@ -68,7 +69,7 @@ const VisitsPage = ({ email }) => {
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Search visits..."
+                  placeholder="Search visits by group name or date..."
                   className="w-full p-2 pl-10 pr-4 border rounded text-black"
                   value={searchTerm}
                   onChange={handleSearch}
@@ -79,7 +80,8 @@ const VisitsPage = ({ email }) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
               {filteredVisits.map(visit => (
                 <div key={visit.visitDate} className="bg-white rounded-lg shadow-md p-4">
-                  <h3 className="font-bold text-black mb-2">{visit.visitDate}</h3>
+                  <h3 className="font-bold text-black mb-2">{visit.groupName}</h3>
+                  <p className="text-sm text-gray-600 mb-2">Date: {visit.visitDate}</p>
                   <p className="text-sm text-gray-600 mb-2">Time: {visit.visitTime}</p>
                   <p className="text-sm text-gray-600 mb-2">Next Visit: {visit.nextVisitDate}</p>
                   <button
@@ -102,12 +104,12 @@ const VisitsPage = ({ email }) => {
               {editingVisitInfo ? (
                 <input
                   type="text"
-                  value={selectedVisit.visitDate}
-                  onChange={(e) => setSelectedVisit({ ...selectedVisit, visitDate: e.target.value })}
+                  value={selectedVisit.groupName}
+                  onChange={(e) => setSelectedVisit({ ...selectedVisit, groupName: e.target.value })}
                   className="text-lg font-bold text-black border-b-2 border-purple-600 focus:outline-none"
                 />
               ) : (
-                <h3 className="text-lg font-bold text-black">{selectedVisit.visitDate}</h3>
+                <h3 className="text-lg font-bold text-black">{selectedVisit.groupName}</h3>
               )}
               <div className="flex items-center">
                 {editingVisitInfo ? (
@@ -133,9 +135,12 @@ const VisitsPage = ({ email }) => {
               </div>
             ) : (
               <ul className="space-y-2">
+                <li className="text-black">Visit Date: {selectedVisit.visitDate}</li>
+                <li className="text-black">Visit Time: {selectedVisit.visitTime}</li>
+                <li className="text-black">Next Visit Date: {selectedVisit.nextVisitDate}</li>
                 {selectedVisit.members.map((member, index) => (
-                  <li key={index} className="flex flex-col space-y-2">
-                    <span className="text-black">Member Name: {member.memberName}</span>
+                  <li key={index} className="flex flex-col space-y-2 mt-4">
+                    <span className="text-black font-semibold">Member Name: {member.memberName}</span>
                     <span className="text-gray-600">Total Loan Given: Ksh {member.totalLoanGiven}</span>
                     <span className="text-gray-600">Loan BF: Ksh {member.loanBF}</span>
                     <span className="text-gray-600">Shares BF: Ksh {member.sharesBF}</span>
