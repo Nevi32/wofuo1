@@ -14,6 +14,7 @@ import SavingsPage from './components/SavingsPage';
 import LoanPage from './components/LoanPages';
 import VisitsPage from './components/VisitsPage';
 import SettingsPage from './components/SettingsPage';
+import LoanTrackPage from './components/LoanTrackPage'; // Import the new LoanTrackPage component
 import './App.css';
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
         <Route path="/loans" element={<LoanPage />} />
         <Route path="/visits" element={<VisitsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/loan-track" element={<LoanTrackPage />} /> {/* Add the new route */}
       </Routes>
     </Router>
   );

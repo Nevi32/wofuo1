@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import { Search, X, Edit } from 'lucide-react';
-import { fetchAllLoans } from '../utils/loansUtil';
+import { fetchAllLoans, updateLoan, fetchDefaulterInfo, fetchContinuingPayments, getLoanSummary } from '../utils/loansUtil';
 
 const LoanPage = ({ email }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -15,7 +15,11 @@ const LoanPage = ({ email }) => {
   useEffect(() => {
     const loadLoans = async () => {
       const allLoans = await fetchAllLoans();
-      setLoans(allLoans);
+      const loansWithSummary = await Promise.all(allLoans.map(async (loan) => {
+        const summary = await getLoanSummary(loan.id);
+        return { ...loan, ...summary };
+      }));
+      setLoans(loansWithSummary);
     };
     loadLoans();
   }, []);
@@ -35,8 +39,10 @@ const LoanPage = ({ email }) => {
     loan.type === loanType && loan.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleLoanClick = (loan) => {
-    setSelectedLoan(loan);
+  const handleLoanClick = async (loan) => {
+    const defaulterInfo = await fetchDefaulterInfo(loan.id);
+    const continuingPayments = await fetchContinuingPayments(loan.id);
+    setSelectedLoan({ ...loan, defaulterInfo, continuingPayments });
     setEditingLoanInfo(false);
   };
 
@@ -49,13 +55,104 @@ const LoanPage = ({ email }) => {
     setEditingLoanInfo(true);
   };
 
-  const handleSaveLoanInfo = (updatedLoan) => {
-    setLoans(loans.map(loan => 
-      loan.id === selectedLoan.id ? updatedLoan : loan
-    ));
-    setSelectedLoan(updatedLoan);
-    setEditingLoanInfo(false);
-    // TODO: Implement saving to local storage
+  const handleSaveLoanInfo = async (updatedLoan) => {
+    try {
+      const savedLoan = await updateLoan(updatedLoan);
+      setLoans(loans.map(loan => 
+        loan.id === savedLoan.id ? { ...savedLoan, ...updatedLoan } : loan
+      ));
+      setSelectedLoan({ ...savedLoan, ...updatedLoan });
+      setEditingLoanInfo(false);
+    } catch (error) {
+      console.error('Failed to update loan:', error);
+      // Handle error (e.g., show an error message to the user)
+    }
+  };
+
+  const renderLoanDetails = (loan) => {
+    const details = [
+      { label: 'Name', value: loan.name },
+      { label: 'Amount', value: loan.amount, prefix: 'KSH ' },
+      { label: 'Term', value: loan.term },
+      { label: 'Interest', value: loan.interest, prefix: 'KSH ' },
+      { label: 'Status', value: loan.status },
+      { label: 'Date Issued', value: loan.dateIssued },
+      { label: 'Date to Repay', value: loan.dateToRepay },
+      { label: 'Company Payout', value: loan.companyPayout, prefix: 'KSH ' },
+      { label: 'Loan Form Fee', value: loan.loanFormFee, prefix: 'KSH ' },
+      { label: 'Amount to Repay', value: loan.amountToRepay, prefix: 'KSH ' },
+      { label: 'Total Repaid', value: loan.totalRepaid, prefix: 'KSH ' },
+      { label: 'Remaining Balance', value: loan.remainingBalance, prefix: 'KSH ' },
+    ];
+
+    return details.map(({ label, value, prefix = '' }) => 
+      value !== undefined && (
+        <li key={label} className="flex justify-between items-center">
+          <span className="text-black">{label}:</span>
+          <span className="text-gray-600">{prefix}{value}</span>
+        </li>
+      )
+    );
+  };
+
+  const renderEditableLoanDetails = (loan, setLoan) => {
+    const details = [
+      { label: 'Name', value: 'name' },
+      { label: 'Amount', value: 'amount', prefix: 'KSH ' },
+      { label: 'Term', value: 'term' },
+      { label: 'Interest', value: 'interest', prefix: 'KSH ' },
+      { label: 'Status', value: 'status' },
+      { label: 'Date Issued', value: 'dateIssued', type: 'date' },
+      { label: 'Date to Repay', value: 'dateToRepay', type: 'date' },
+      { label: 'Company Payout', value: 'companyPayout', prefix: 'KSH ' },
+      { label: 'Loan Form Fee', value: 'loanFormFee', prefix: 'KSH ' },
+    ];
+
+    return details.map(({ label, value, prefix = '', type = 'text' }) => 
+      loan[value] !== undefined && (
+        <div key={label} className="mb-4">
+          <label className="block text-black font-semibold">{label}</label>
+          <input
+            type={type}
+            value={loan[value]}
+            onChange={(e) => setLoan({ ...loan, [value]: e.target.value })}
+            className="w-full p-2 border rounded text-black"
+          />
+        </div>
+      )
+    );
+  };
+
+  const renderDefaulterInfo = (defaulterInfo) => {
+    if (!defaulterInfo || defaulterInfo.length === 0) {
+      return <p>No defaulter information available.</p>;
+    }
+
+    return (
+      <ul className="list-disc pl-5">
+        {defaulterInfo.map((info, index) => (
+          <li key={index} className="text-gray-600">
+            {info.date}: {info.description}
+          </li>
+        ))}
+      </ul>
+    );
+  };
+
+  const renderContinuingPayments = (continuingPayments) => {
+    if (!continuingPayments || continuingPayments.length === 0) {
+      return <p>No continuing payments recorded.</p>;
+    }
+
+    return (
+      <ul className="list-disc pl-5">
+        {continuingPayments.map((payment, index) => (
+          <li key={index} className="text-gray-600">
+            {payment.date}: KSH {payment.amount}
+          </li>
+        ))}
+      </ul>
+    );
   };
 
   return (
@@ -105,11 +202,12 @@ const LoanPage = ({ email }) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredLoans.map(loan => (
                 <div key={loan.id} className="bg-white rounded-lg shadow-md p-4">
-                  <h3 className="font-bold text-black mb-2">{loan.name}</h3>
+                  <h3 className="font-bold text-black mb-2">ID: {loan.id}</h3>
+                  <p className="text-sm text-gray-600 mb-2">Name: {loan.name}</p>
                   <p className="text-sm text-gray-600 mb-2">Amount: KSH {loan.amount}</p>
                   <p className="text-sm text-gray-600 mb-2">Term: {loan.term}</p>
-                  <p className="text-sm text-gray-600 mb-2">Interest: {loan.interest}</p>
                   <p className="text-sm text-gray-600 mb-2">Status: {loan.status}</p>
+                  <p className="text-sm text-gray-600 mb-2">Remaining: KSH {loan.remainingBalance}</p>
                   <button
                     onClick={() => handleLoanClick(loan)}
                     className="bg-purple-600 text-white px-4 py-2 rounded-md w-full mt-2"
@@ -127,16 +225,7 @@ const LoanPage = ({ email }) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-60">
           <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              {editingLoanInfo ? (
-                <input
-                  type="text"
-                  value={selectedLoan.name}
-                  onChange={(e) => setSelectedLoan({ ...selectedLoan, name: e.target.value })}
-                  className="text-lg font-bold text-black border-b-2 border-purple-600 focus:outline-none"
-                />
-              ) : (
-                <h3 className="text-lg font-bold text-black">{selectedLoan.name}</h3>
-              )}
+              <h3 className="text-lg font-bold text-black">Loan ID: {selectedLoan.id}</h3>
               <div className="flex items-center">
                 {editingLoanInfo ? (
                   <button
@@ -157,98 +246,65 @@ const LoanPage = ({ email }) => {
             </div>
             {editingLoanInfo ? (
               <div className="space-y-4">
-                <div>
-                  <label className="block text-black font-semibold">Amount</label>
-                  <input
-                    type="number"
-                    value={selectedLoan.amount}
-                    onChange={(e) => setSelectedLoan({ ...selectedLoan, amount: e.target.value })}
-                    className="w-full p-2 border rounded text-black"
-                  />
-                </div>
-                <div>
-                  <label className="block text-black font-semibold">Term</label>
-                  <input
-                    type="text"
-                    value={selectedLoan.term}
-                    onChange={(e) => setSelectedLoan({ ...selectedLoan, term: e.target.value })}
-                    className="w-full p-2 border rounded text-black"
-                  />
-                </div>
-                <div>
-                  <label className="block text-black font-semibold">Interest</label>
-                  <input
-                    type="text"
-                    value={selectedLoan.interest}
-                    onChange={(e) => setSelectedLoan({ ...selectedLoan, interest: e.target.value })}
-                    className="w-full p-2 border rounded text-black"
-                  />
-                </div>
-                <div>
-                  <label className="block text-black font-semibold">Status</label>
-                  <input
-                    type="text"
-                    value={selectedLoan.status}
-                    onChange={(e) => setSelectedLoan({ ...selectedLoan, status: e.target.value })}
-                    className="w-full p-2 border rounded text-black"
-                  />
-                </div>
+                {renderEditableLoanDetails(selectedLoan, setSelectedLoan)}
+                {selectedLoan.guarantors && (
+                  <div>
+                    <label className="block text-black font-semibold">Guarantors</label>
+                    {selectedLoan.guarantors.map((guarantor, index) => (
+                      <div key={index} className="flex space-x-2 mb-2">
+                        <input
+                          type="text"
+                          value={guarantor.name}
+                          onChange={(e) => {
+                            const newGuarantors = [...selectedLoan.guarantors];
+                            newGuarantors[index].name = e.target.value;
+                            setSelectedLoan({ ...selectedLoan, guarantors: newGuarantors });
+                          }}
+                          className="flex-1 p-2 border rounded text-black"
+                          placeholder="Name"
+                        />
+                        <input
+                          type="text"
+                          value={guarantor.group}
+                          onChange={(e) => {
+                            const newGuarantors = [...selectedLoan.guarantors];
+                            newGuarantors[index].group = e.target.value;
+                            setSelectedLoan({ ...selectedLoan, guarantors: newGuarantors });
+                          }}
+                          className="flex-1 p-2 border rounded text-black"
+                          placeholder="Group"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
-              <ul className="space-y-2">
-                <li className="flex justify-between items-center">
-                  <span className="text-black">Amount:</span>
-                  <span className="text-gray-600">KSH {selectedLoan.amount}</span>
-                </li>
-                <li className="flex justify-between items-center">
-                  <span className="text-black">Term:</span>
-                  <span className="text-gray-600">{selectedLoan.term}</span>
-                </li>
-                <li className="flex justify-between items-center">
-                  <span className="text-black">Interest:</span>
-                  <span className="text-gray-600">{selectedLoan.interest}</span>
-                </li>
-                <li className="flex justify-between items-center">
-                  <span className="text-black">Status:</span>
-                  <span className="text-gray-600">{selectedLoan.status}</span>
-                </li>
-                {selectedLoan.dateIssued && (
-                  <li className="flex justify-between items-center">
-                    <span className="text-black">Date Issued:</span>
-                    <span className="text-gray-600">{selectedLoan.dateIssued}</span>
-                  </li>
-                )}
-                {selectedLoan.dateToRepay && (
-                  <li className="flex justify-between items-center">
-                    <span className="text-black">Date to Repay:</span>
-                    <span className="text-gray-600">{selectedLoan.dateToRepay}</span>
-                  </li>
-                )}
-                {selectedLoan.companyPayout && (
-                  <li className="flex justify-between items-center">
-                    <span className="text-black">Company Payout:</span>
-                    <span className="text-gray-600">KSH {selectedLoan.companyPayout}</span>
-                  </li>
-                )}
-                {selectedLoan.guarantors && selectedLoan.guarantors.length > 0 && (
-                  <li className="flex flex-col">
-                    <span className="text-black font-semibold mb-1">Guarantors:</span>
-                    <ul className="list-disc pl-5">
-                      {selectedLoan.guarantors.map((guarantor, index) => (
-                        <li key={index} className="text-gray-600">
-                          {guarantor.name} ({guarantor.group})
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                )}
-                {selectedLoan.loanFormFee && (
-                  <li className="flex justify-between items-center">
-                    <span className="text-black">Loan Form Fee:</span>
-                    <span className="text-gray-600">KSH {selectedLoan.loanFormFee}</span>
-                  </li>
-                )}
-              </ul>
+              <div className="space-y-4">
+                <ul className="space-y-2">
+                  {renderLoanDetails(selectedLoan)}
+                  {selectedLoan.guarantors && selectedLoan.guarantors.length > 0 && (
+                    <li className="flex flex-col">
+                      <span className="text-black font-semibold mb-1">Guarantors:</span>
+                      <ul className="list-disc pl-5">
+                        {selectedLoan.guarantors.map((guarantor, index) => (
+                          <li key={index} className="text-gray-600">
+                            {guarantor.name} ({guarantor.group})
+                          </li>
+                        ))}
+                      </ul>
+                    </li>
+                  )}
+                </ul>
+                <div>
+                  <h4 className="text-black font-semibold mb-1">Defaulter Information:</h4>
+                  {renderDefaulterInfo(selectedLoan.defaulterInfo)}
+                </div>
+                <div>
+                  <h4 className="text-black font-semibold mb-1">Continuing Payments:</h4>
+                  {renderContinuingPayments(selectedLoan.continuingPayments)}
+                </div>
+              </div>
             )}
           </div>
         </div>

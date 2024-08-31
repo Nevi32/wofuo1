@@ -27,6 +27,7 @@ const Dashboard = () => {
     { title: 'Manage Savings', description: 'Track and manage member savings.', path: '/manage-savings' },
     { title: 'Manage Loans', description: 'Handle loan applications and repayments.', path: '/manage-loans' },
     { title: 'Manage Visits', description: 'Track and manage visits to groups.', path: '/manage-visits' },
+    { title: 'Loan Track', description: 'Track loans and assign status.', path: '/loan-track' },
   ];
 
   const handleCardClick = (path) => {
@@ -68,5 +69,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
 
