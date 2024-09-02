@@ -43,7 +43,7 @@ const SettingsPage = () => {
     return null;
   };
 
-  const syncCollectionToFirestore = async (collectionName, data, memberData) => {
+  const syncCollectionToFirestore = async (collectionName, data) => {
     try {
       const collectionRef = collection(db, collectionName);
       let updatedCount = 0;
@@ -51,31 +51,53 @@ const SettingsPage = () => {
 
       for (const item of data) {
         let queryConstraints = [];
-        if (collectionName === 'members') {
-          queryConstraints = [
-            where('groupName', '==', item.groupName),
-            where('fullName', '==', item.fullName),
-            where('nationalId', '==', item.nationalId)
-          ];
-        } else if (collectionName === 'users') {
-          queryConstraints = [where('email', '==', item.email)];
-        } else {
-          const nationalId = await getMemberNationalId(item.groupName, item.memberName);
-          if (!nationalId) {
-            console.error(`No matching member found for ${item.memberName} in group ${item.groupName}`);
-            continue;
-          }
-          queryConstraints = [
-            where('groupName', '==', item.groupName),
-            where('memberName', '==', item.memberName),
-            where('nationalId', '==', nationalId)
-          ];
-          if (item.savingDate) {
-            queryConstraints.push(where('savingDate', '==', item.savingDate));
-          }
-          if (item.withdrawDate) {
-            queryConstraints.push(where('withdrawDate', '==', item.withdrawDate));
-          }
+        switch(collectionName) {
+          case 'members':
+            queryConstraints = [
+              where('groupName', '==', item.groupName),
+              where('fullName', '==', item.fullName),
+              where('nationalId', '==', item.nationalId)
+            ];
+            break;
+          case 'users':
+            queryConstraints = [where('email', '==', item.email)];
+            break;
+          case 'groupLoans':
+          case 'longTermLoans':
+          case 'shortTermLoans':
+            queryConstraints = [where('id', '==', item.id)];
+            break;
+          case 'continuingPayments':
+            queryConstraints = [
+              where('id', '==', item.id),
+              where('loanId', '==', item.loanId)
+            ];
+            break;
+          case 'defaulters':
+            queryConstraints = [
+              where('id', '==', item.id),
+              where('loanId', '==', item.loanId)
+            ];
+            break;
+          case 'visits':
+            queryConstraints = [
+              where('groupName', '==', item.groupName),
+              where('visitDate', '==', item.visitDate)
+            ];
+            break;
+          default:
+            const nationalId = await getMemberNationalId(item.groupName, item.memberName);
+            if (!nationalId) {
+              console.error(`No matching member found for ${item.memberName} in group ${item.groupName}`);
+              continue;
+            }
+            queryConstraints = [
+              where('groupName', '==', item.groupName),
+              where('memberName', '==', item.memberName),
+              where('nationalId', '==', nationalId)
+            ];
+            if (item.savingDate) queryConstraints.push(where('savingDate', '==', item.savingDate));
+            if (item.withdrawDate) queryConstraints.push(where('withdrawDate', '==', item.withdrawDate));
         }
 
         const q = query(collectionRef, ...queryConstraints);
@@ -88,7 +110,7 @@ const SettingsPage = () => {
           updatedCount++;
         } else {
           // Document doesn't exist, create new one
-          if (collectionName !== 'members' && collectionName !== 'users') {
+          if (!['members', 'users', 'groupLoans', 'longTermLoans', 'shortTermLoans', 'continuingPayments', 'defaulters', 'visits'].includes(collectionName)) {
             const nationalId = await getMemberNationalId(item.groupName, item.memberName);
             item.nationalId = nationalId;
           }
@@ -120,10 +142,14 @@ const SettingsPage = () => {
       await syncCollectionToFirestore('members', localData.members);
     }
 
-    const collections = ['users', 'savings', 'totalSavings', 'withdrawals'];
+    const collections = [
+      'users', 'savings', 'totalSavings', 'withdrawals',
+      'groupLoans', 'longTermLoans', 'shortTermLoans',
+      'continuingPayments', 'defaulters', 'visits'
+    ];
     for (const collectionName of collections) {
       if (localData[collectionName] && localData[collectionName].length > 0) {
-        await syncCollectionToFirestore(collectionName, localData[collectionName], localData.members);
+        await syncCollectionToFirestore(collectionName, localData[collectionName]);
       }
     }
 
@@ -179,6 +205,12 @@ const SettingsPage = () => {
                 <p>Savings Entries: {localData.savings?.length || 0}</p>
                 <p>Total Savings Entries: {localData.totalSavings?.length || 0}</p>
                 <p>Withdrawals: {localData.withdrawals?.length || 0}</p>
+                <p>Group Loans: {localData.groupLoans?.length || 0}</p>
+                <p>Long-term Loans: {localData.longTermLoans?.length || 0}</p>
+                <p>Short-term Loans: {localData.shortTermLoans?.length || 0}</p>
+                <p>Continuing Payments: {localData.continuingPayments?.length || 0}</p>
+                <p>Defaulters: {localData.defaulters?.length || 0}</p>
+                <p>Visits: {localData.visits?.length || 0}</p>
               </div>
             )}
             {Object.keys(pushStatus).length > 0 && (
