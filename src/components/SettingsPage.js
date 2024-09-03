@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { collection, addDoc, query, where, getDocs, updateDoc, doc, deleteDoc } from "firebase/firestore";
+import { useLocation } from 'react-router-dom';
+import { collection, query, where, getDocs, addDoc, updateDoc, doc, deleteDoc } from "firebase/firestore";
 import { db } from '../lib/firebase-config.mjs';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import '../styles/Dashboard.css';
-import { initDB, getDB } from '../utils/localStorageDB';
+import { initDB, getDB, saveDB, mergeData } from '../utils/localStorageDB';
 
 const SettingsPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [localData, setLocalData] = useState(null);
   const [pushStatus, setPushStatus] = useState({});
-  const navigate = useNavigate();
+  const [showDialog, setShowDialog] = useState(false);
+  const [groupName, setGroupName] = useState('');
+  const [pullStatus, setPullStatus] = useState('');
   const location = useLocation();
 
   useEffect(() => {
@@ -171,15 +173,53 @@ const SettingsPage = () => {
     alert('Sync with Firestore completed. Check the status for each collection.');
   };
 
-  const handlePullFromLocalStorage = async () => {
+  const handlePullFromFirestore = () => {
+    setShowDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setShowDialog(false);
+    setGroupName('');
+    setPullStatus('');
+  };
+
+  const handlePullData = async () => {
+    if (!groupName) {
+      alert('Please enter a group name');
+      return;
+    }
+
     try {
-      await initDB();
-      const db = await getDB();
-      setLocalData(db);
-      alert('Data pulled from localStorage successfully!');
+      setPullStatus('Pulling data...');
+      const collections = [
+        'members', 'savings', 'totalSavings', 'withdrawals',
+        'groupLoans', 'longTermLoans', 'shortTermLoans',
+        'continuingPayments', 'defaulters', 'visits'
+      ];
+
+      let allData = {};
+
+      for (const collectionName of collections) {
+        const collectionRef = collection(db, collectionName);
+        const q = query(collectionRef, where('groupName', '==', groupName));
+        const querySnapshot = await getDocs(q);
+        
+        allData[collectionName] = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+      }
+
+      // Merge the pulled data with existing data in localStorage
+      const existingData = await getDB();
+      const mergedData = mergeData(existingData, allData);
+
+      await saveDB(mergedData);
+      setLocalData(mergedData);
+      setPullStatus('Data pulled successfully!');
     } catch (error) {
-      console.error('Error pulling data from localStorage:', error);
-      alert('Failed to pull data from localStorage.');
+      console.error('Error pulling data from Firestore:', error);
+      setPullStatus('Failed to pull data from Firestore.');
     }
   };
 
@@ -191,7 +231,7 @@ const SettingsPage = () => {
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold mb-4">Settings</h2>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 mb-4">
               <button
                 onClick={handleSyncWithFirestore}
                 className="bg-purple-700 text-white py-2 px-4 rounded-lg hover:bg-purple-800 transition duration-300"
@@ -199,22 +239,22 @@ const SettingsPage = () => {
                 Sync with Firestore
               </button>
               <button
-                onClick={handlePullFromLocalStorage}
+                onClick={handlePullFromFirestore}
                 className="bg-purple-700 text-white py-2 px-4 rounded-lg hover:bg-purple-800 transition duration-300"
               >
-                Pull from localStorage
+                Pull from Firestore
               </button>
             </div>
             {currentUser && (
-              <div className="mt-4">
-                <h3 className="text-lg font-semibold">Current User:</h3>
+              <div className="mb-4 p-4 bg-white rounded-lg shadow">
+                <h3 className="text-lg font-semibold mb-2">Current User:</h3>
                 <p>Email: {currentUser.email}</p>
                 <p>Username: {currentUser.username}</p>
               </div>
             )}
             {localData && (
-              <div className="mt-4">
-                <h3 className="text-lg font-semibold">Local Data Summary:</h3>
+              <div className="mb-4 p-4 bg-white rounded-lg shadow">
+                <h3 className="text-lg font-semibold mb-2">Local Data Summary:</h3>
                 <p>Users: {localData.users?.length || 0}</p>
                 <p>Members: {localData.members?.length || 0}</p>
                 <p>Savings Entries: {localData.savings?.length || 0}</p>
@@ -229,8 +269,8 @@ const SettingsPage = () => {
               </div>
             )}
             {Object.keys(pushStatus).length > 0 && (
-              <div className="mt-4">
-                <h3 className="text-lg font-semibold">Sync Status:</h3>
+              <div className="p-4 bg-white rounded-lg shadow">
+                <h3 className="text-lg font-semibold mb-2">Sync Status:</h3>
                 {Object.entries(pushStatus).map(([collection, status]) => (
                   <p key={collection}>{collection}: {status}</p>
                 ))}
@@ -239,10 +279,50 @@ const SettingsPage = () => {
           </div>
         </main>
       </div>
+      {showDialog && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" id="my-modal">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3 text-center">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">Pull Data from Firestore</h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500">
+                  Enter the group name to pull data from Firestore:
+                </p>
+                <input
+                  type="text"
+                  value={groupName}
+                  onChange={(e) => setGroupName(e.target.value)}
+                  className="mt-2 px-3 py-2 bg-white border shadow-sm border-slate-300 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-sky-500 block w-full rounded-md sm:text-sm focus:ring-1"
+                  placeholder="Group Name"
+                />
+                {pullStatus && (
+                  <p className="mt-2 text-sm text-gray-500">
+                    Status: {pullStatus}
+                  </p>
+                )}
+              </div>
+              <div className="items-center px-4 py-3">
+                <button
+                  id="ok-btn"
+                  className="px-4 py-2 bg-purple-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
+                  onClick={handlePullData}
+                >
+                  Pull
+                </button>
+                <button
+                  id="cancel-btn"
+                  className="mt-3 px-4 py-2 bg-white text-base font-medium rounded-md w-full shadow-sm border border-gray-300 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-300"
+                  onClick={handleCloseDialog}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default SettingsPage;
-
-
