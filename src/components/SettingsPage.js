@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { collection, addDoc, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
+import { collection, addDoc, query, where, getDocs, updateDoc, doc, deleteDoc } from "firebase/firestore";
 import { db } from '../lib/firebase-config.mjs';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
@@ -48,6 +48,25 @@ const SettingsPage = () => {
       const collectionRef = collection(db, collectionName);
       let updatedCount = 0;
       let createdCount = 0;
+      let deletedCount = 0;
+
+      // Special handling for defaulters
+      if (collectionName === 'defaulters') {
+        const firestoreDefaulters = await getDocs(collectionRef);
+        
+        if (data.length === 0) {
+          // If there are no defaulters in local storage, delete all defaulters in Firestore
+          for (const doc of firestoreDefaulters.docs) {
+            await deleteDoc(doc.ref);
+            deletedCount++;
+          }
+          setPushStatus(prev => ({
+            ...prev,
+            [collectionName]: `Success: Deleted all ${deletedCount} defaulters from Firestore`
+          }));
+          return; // Exit the function early as we don't need to process anything else
+        }
+      }
 
       for (const item of data) {
         let queryConstraints = [];
@@ -68,11 +87,6 @@ const SettingsPage = () => {
             queryConstraints = [where('id', '==', item.id)];
             break;
           case 'continuingPayments':
-            queryConstraints = [
-              where('id', '==', item.id),
-              where('loanId', '==', item.loanId)
-            ];
-            break;
           case 'defaulters':
             queryConstraints = [
               where('id', '==', item.id),
@@ -121,7 +135,7 @@ const SettingsPage = () => {
 
       setPushStatus(prev => ({
         ...prev,
-        [collectionName]: `Success: Updated ${updatedCount}, Created ${createdCount}`
+        [collectionName]: `Success: Updated ${updatedCount}, Created ${createdCount}, Deleted ${deletedCount}`
       }));
     } catch (error) {
       console.error(`Error syncing ${collectionName} with Firestore:`, error);
@@ -148,8 +162,9 @@ const SettingsPage = () => {
       'continuingPayments', 'defaulters', 'visits'
     ];
     for (const collectionName of collections) {
-      if (localData[collectionName] && localData[collectionName].length > 0) {
-        await syncCollectionToFirestore(collectionName, localData[collectionName]);
+      // For defaulters, we want to sync even if the local data is empty
+      if (collectionName === 'defaulters' || (localData[collectionName] && localData[collectionName].length > 0)) {
+        await syncCollectionToFirestore(collectionName, localData[collectionName] || []);
       }
     }
 
@@ -229,3 +244,5 @@ const SettingsPage = () => {
 };
 
 export default SettingsPage;
+
+
