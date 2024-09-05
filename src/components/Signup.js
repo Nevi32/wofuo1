@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+// Signup.js
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { signUp } from '../utils/authUtil';
-import { initDB } from '../utils/indexedDB';
-import '../styles/Auth.css';
 import Notification from './Notification';
+import '../styles/Auth.css';
 
 function Signup() {
   const [showPassword, setShowPassword] = useState(false);
@@ -14,19 +14,12 @@ function Signup() {
   const [notification, setNotification] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    initDB().catch(error => {
-      console.error('Failed to initialize database:', error);
-      setNotification({ message: 'Failed to initialize database. Please try again later.', type: 'error' });
-    });
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await signUp(email, username, password);
       setNotification({ message: 'Signup successful!', type: 'success' });
-      setTimeout(() => navigate('/login'), 2000); // Redirect after 2 seconds
+      setTimeout(() => navigate('/login'), 2000);
     } catch (error) {
       console.error('Signup error:', error);
       setNotification({ message: `Signup failed: ${error.message}`, type: 'error' });
@@ -42,24 +35,24 @@ function Signup() {
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="email">Email</label>
-            <input 
-              type="email" 
-              id="email" 
+            <input
+              type="email"
+              id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email" 
-              required 
+              placeholder="Enter your email"
+              required
             />
           </div>
           <div className="form-group">
             <label htmlFor="username">Username</label>
-            <input 
-              type="text" 
-              id="username" 
+            <input
+              type="text"
+              id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter username" 
-              required 
+              placeholder="Enter username"
+              required
             />
           </div>
           <div className="form-group">

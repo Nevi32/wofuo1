@@ -1,39 +1,40 @@
-import { initDB, getDB, saveDB } from './localStorageDB';
+import { auth } from '../lib/firebase-config.mjs';
+import { 
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  onAuthStateChanged,
+  signOut
+} from "firebase/auth";
 
 export const signUp = async (email, username, password) => {
-  await initDB(); // Initialize the database if it doesn't exist
-
-  const db = await getDB();
-
-  // Check if the user already exists
-  const existingUser = db.users.find(user => user.email === email || user.username === username);
-
-  if (existingUser) {
-    throw new Error('Email or username already in use.');
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(userCredential.user, { displayName: username });
+    return userCredential.user;
+  } catch (error) {
+    throw error;
   }
-
-  // Add the new user to the database
-  db.users.push({ email, username, password });
-  await saveDB(db);
-
-  return { email, username };
 };
 
 export const login = async (email, password) => {
-  await initDB(); // Ensure the database is initialized
-
-  const db = await getDB();
-
-  // Check if the user exists and the password matches
-  const user = db.users.find(user => user.email === email && user.password === password);
-
-  if (!user) {
-    throw new Error('Invalid email or password.');
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return { user: userCredential.user };
+  } catch (error) {
+    throw error;
   }
-
-  // Store user info in session storage
-  sessionStorage.setItem('currentUser', JSON.stringify(user));
-
-  return { user };
 };
 
+export const logout = async () => {
+  try {
+    await signOut(auth);
+    sessionStorage.removeItem('currentUser');
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const onAuthStateChange = (callback) => {
+  return onAuthStateChanged(auth, callback);
+};

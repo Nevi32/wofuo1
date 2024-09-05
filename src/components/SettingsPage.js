@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs, addDoc, updateDoc, doc, deleteDoc } from "firebase/firestore";
-import { db } from '../lib/firebase-config.mjs';
+import { db, auth } from '../lib/firebase-config.mjs';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import '../styles/Dashboard.css';
@@ -16,23 +16,34 @@ const SettingsPage = () => {
   const [groupName, setGroupName] = useState('');
   const [pullStatus, setPullStatus] = useState('');
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       await initDB();
-      const storedUser = sessionStorage.getItem('currentUser');
-      if (storedUser) {
-        setCurrentUser(JSON.parse(storedUser));
+      const user = auth.currentUser;
+      if (user) {
+        setCurrentUser({
+          email: user.email,
+          username: user.displayName || user.email.split('@')[0]
+        });
+      } else {
+        // If no user is authenticated, redirect to login
+        navigate('/login');
+        return;
       }
       const db = await getDB();
       setLocalData(db);
     };
     fetchData();
-  }, []);
+  }, [navigate]);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   const getMemberNationalId = async (groupName, memberName) => {
+    if (!auth.currentUser) {
+      throw new Error('User not authenticated');
+    }
     const membersRef = collection(db, 'members');
     const q = query(membersRef, 
       where('groupName', '==', groupName),
@@ -46,6 +57,9 @@ const SettingsPage = () => {
   };
 
   const syncCollectionToFirestore = async (collectionName, data) => {
+    if (!auth.currentUser) {
+      throw new Error('User not authenticated');
+    }
     try {
       const collectionRef = collection(db, collectionName);
       let updatedCount = 0;
@@ -57,7 +71,6 @@ const SettingsPage = () => {
         const firestoreDefaulters = await getDocs(collectionRef);
         
         if (data.length === 0) {
-          // If there are no defaulters in local storage, delete all defaulters in Firestore
           for (const doc of firestoreDefaulters.docs) {
             await deleteDoc(doc.ref);
             deletedCount++;
@@ -66,7 +79,7 @@ const SettingsPage = () => {
             ...prev,
             [collectionName]: `Success: Deleted all ${deletedCount} defaulters from Firestore`
           }));
-          return; // Exit the function early as we don't need to process anything else
+          return;
         }
       }
 
@@ -120,12 +133,10 @@ const SettingsPage = () => {
         const querySnapshot = await getDocs(q);
 
         if (!querySnapshot.empty) {
-          // Document exists, update it
           const docRef = doc(db, collectionName, querySnapshot.docs[0].id);
           await updateDoc(docRef, item);
           updatedCount++;
         } else {
-          // Document doesn't exist, create new one
           if (!['members', 'users', 'groupLoans', 'longTermLoans', 'shortTermLoans', 'continuingPayments', 'defaulters', 'visits'].includes(collectionName)) {
             const nationalId = await getMemberNationalId(item.groupName, item.memberName);
             item.nationalId = nationalId;
@@ -146,6 +157,10 @@ const SettingsPage = () => {
   };
 
   const handleSyncWithFirestore = async () => {
+    if (!auth.currentUser) {
+      alert('You must be logged in to sync data.');
+      return;
+    }
     if (!localData) {
       alert('No local data found!');
       return;
@@ -153,7 +168,6 @@ const SettingsPage = () => {
 
     setPushStatus({});
 
-    // Sync members first
     if (localData.members && localData.members.length > 0) {
       await syncCollectionToFirestore('members', localData.members);
     }
@@ -164,7 +178,6 @@ const SettingsPage = () => {
       'continuingPayments', 'defaulters', 'visits'
     ];
     for (const collectionName of collections) {
-      // For defaulters, we want to sync even if the local data is empty
       if (collectionName === 'defaulters' || (localData[collectionName] && localData[collectionName].length > 0)) {
         await syncCollectionToFirestore(collectionName, localData[collectionName] || []);
       }
@@ -174,6 +187,10 @@ const SettingsPage = () => {
   };
 
   const handlePullFromFirestore = () => {
+    if (!auth.currentUser) {
+      alert('You must be logged in to pull data.');
+      return;
+    }
     setShowDialog(true);
   };
 
@@ -184,6 +201,10 @@ const SettingsPage = () => {
   };
 
   const handlePullData = async () => {
+    if (!auth.currentUser) {
+      alert('You must be logged in to pull data.');
+      return;
+    }
     if (!groupName) {
       alert('Please enter a group name');
       return;
@@ -210,7 +231,6 @@ const SettingsPage = () => {
         }));
       }
 
-      // Merge the pulled data with existing data in localStorage
       const existingData = await getDB();
       const mergedData = mergeData(existingData, allData);
 
@@ -222,6 +242,10 @@ const SettingsPage = () => {
       setPullStatus('Failed to pull data from Firestore.');
     }
   };
+
+  if (!currentUser) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden">

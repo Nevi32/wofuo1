@@ -15,14 +15,17 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Capture the result from login
       const { user } = await login(email, password);
-      
-      // Store user info in localStorage
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      
       setNotification({ message: 'Login successful!', type: 'success' });
-      setTimeout(() => navigate('/dashboard'), 2000); // Redirect after 2 seconds
+      
+      // Store user info in sessionStorage
+      sessionStorage.setItem('currentUser', JSON.stringify({
+        uid: user.uid,
+        email: user.email,
+        username: user.displayName || email.split('@')[0] // Use displayName if available, otherwise use email username
+      }));
+      
+      navigate('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
       setNotification({ message: `Login failed: ${error.message}`, type: 'error' });
@@ -38,13 +41,13 @@ function Login() {
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="email">Email</label>
-            <input 
-              type="email" 
-              id="email" 
+            <input
+              type="email"
+              id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email" 
-              required 
+              placeholder="Enter your email"
+              required
             />
           </div>
           <div className="form-group">
@@ -78,5 +81,3 @@ function Login() {
 }
 
 export default Login;
-
-

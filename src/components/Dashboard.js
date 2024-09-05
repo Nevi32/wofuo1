@@ -38,7 +38,7 @@ const Dashboard = () => {
     <div className="flex h-screen bg-gray-100 overflow-hidden">
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} activePath={location.pathname} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        {user && <Navbar email={user.email} toggleSidebar={toggleSidebar} />}
+        <Navbar toggleSidebar={toggleSidebar} />
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             {user ? (
@@ -69,4 +69,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
